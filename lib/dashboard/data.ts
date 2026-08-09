@@ -10,6 +10,7 @@ import { latestSevenLocalDates, localDateRangeToUtcBounds } from "@/lib/dates/ca
 import { SupabasePromptSettingsRepository } from "@/lib/prompt-settings/repository";
 import { composePromptVersion } from "@/lib/prompt-settings/config";
 import { RUN_SUMMARY_PROMPT_VERSION } from "@/lib/summaries/prompt";
+import { applyCreatorAggregation } from "@/lib/summaries/service";
 
 type RunEpisodeRow = { episode_id: string; status: EpisodeProcessingStatus; error_message: string | null; retry_count: number; transcript_status: DashboardEpisode["transcriptStatus"]; extraction_status: DashboardEpisode["extractionStatus"] };
 type EpisodeRow = { id: string; source_id: string; title: string; source_url: string; published_at?: string; insights?: Array<{ id: string }> };
@@ -27,6 +28,7 @@ export function emptyDashboardSnapshot(loadError: string | null = null): Dashboa
       synthesis: { value: "", version: 1, updatedAt: "" },
     },
     enabledSourcesCount: 0, sourceLibrary: [], latestRunSources: [], sourcesChecked: 0, latestRunId: null, lastRunAt: null, currentRunStatus: "NOT_STARTED",
+    runType: null, batchSubmittedCount: 0, batchEligibleCount: 0, batchDuplicateCount: 0, batchInvalidCount: 0, batchAlreadyProcessedCount: 0, batchItems: [],
     activeSourceNames: [], episodesDiscovered: 0, episodesSelected: 0, episodesDeferred: 0,
     discoveryStart: null, discoveryEnd: null, youtubeMaxVideosPerCreator: null,
     completedCount: 0, failedCount: 0, cancelledCount: 0, episodes: [], recentEpisodes: [], recentInsights: [],
@@ -73,12 +75,12 @@ export async function getDashboardSnapshot(
 
   const [{ data: libraryRows, error: sourceError }, { data: latestRun, error: runError }] = await Promise.all([
     supabase.from("sources").select("id, name, platform, channel_url, external_channel_id, enabled, selected_by_default").order("name"),
-    supabase.from("processing_runs").select("id, started_at, status, sources_checked, episodes_discovered, episodes_selected, episodes_deferred, discovery_start, discovery_end, youtube_max_videos_per_creator").order("started_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("processing_runs").select("id, started_at, status, run_type, sources_checked, episodes_discovered, episodes_selected, episodes_deferred, discovery_start, discovery_end, youtube_max_videos_per_creator, batch_submitted_count, batch_eligible_count, batch_duplicate_count, batch_invalid_count, batch_already_processed_count").order("started_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
   if (sourceError) throw new Error(`Unable to count enabled sources: ${sourceError.message}`);
   if (runError) throw new Error(`Unable to load latest processing run: ${runError.message}`);
 
-  let attempts: RunEpisodeRow[] = []; const episodeRows: EpisodeRow[] = []; let sourceRows: SourceRow[] = []; let failureData: Array<Record<string, unknown>> = []; let latestRunSources: Array<{ id: string; name: string }> = [];
+  let attempts: RunEpisodeRow[] = []; const episodeRows: EpisodeRow[] = []; let sourceRows: SourceRow[] = []; let failureData: Array<Record<string, unknown>> = []; let latestRunSources: Array<{ id: string; name: string }> = []; let batchItems: DashboardSnapshot["batchItems"] = [];
   if (latestRun) {
     const [{ data: attemptData, error: attemptError }, { data: failures, error: failureError }, { data: runSources, error: runSourcesError }] = await Promise.all([
       supabase.from("run_episodes").select("episode_id, status, error_message, retry_count, transcript_status, extraction_status").eq("run_id", latestRun.id),
@@ -98,6 +100,18 @@ export async function getDashboardSnapshot(
     if (sourceIds.length > 0) {
       const { data, error } = await supabase.from("sources").select("id, name").in("id", sourceIds);
       if (error) throw new Error(`Unable to load episode sources: ${error.message}`); sourceRows = data as SourceRow[];
+    }
+    if (latestRun.run_type === "SPECIFIC_URL_BATCH") {
+      const { data, error } = await supabase.from("processing_run_url_items")
+        .select("line_number, submitted_url, normalized_url, video_id, status, error_message, episode_id, episodes(title, source_url, sources(name))")
+        .eq("run_id", latestRun.id).order("line_number");
+      if (error) throw new Error(`Unable to load URL batch results: ${error.message}`);
+      batchItems = data.map((item) => {
+        const episode = item.episodes as unknown as { title: string; source_url: string; sources: { name: string } | null } | null;
+        return { lineNumber: Number(item.line_number), submittedUrl: item.submitted_url as string, normalizedUrl: item.normalized_url as string | null,
+          videoId: item.video_id as string | null, status: item.status as string, errorMessage: item.error_message as string | null,
+          episodeId: item.episode_id as string | null, episodeTitle: episode?.title ?? null, sourceUrl: episode?.source_url ?? null, sourceName: episode?.sources?.name ?? null };
+      });
     }
   }
   const episodeById = new Map(episodeRows.map((episode) => [episode.id, episode])); const sourceById = new Map(sourceRows.map((source) => [source.id, source.name]));
@@ -135,6 +149,7 @@ export async function getDashboardSnapshot(
         promptSettings.SYNTHESIS_CUSTOM_INSTRUCTIONS.version,
       );
       const context = await summaryRepository.loadDateRangeContext(period.fromDate, period.toDate, timezoneOffsetMinutes);
+      synthesis = applyCreatorAggregation(synthesis, context.insights);
       const cited = new Set([...synthesis.overviewSupportingInsightIds, ...Object.values(synthesis.sections).flatMap((items) => items.flatMap((item) => item.supportingInsightIds))]);
       supportingInsights = context.insights.filter((item) => cited.has(item.id)); splitDecisions = context.splitDecisions.filter((item) => synthesis!.splitDecisionIds.includes(item.id));
     }
@@ -153,6 +168,10 @@ export async function getDashboardSnapshot(
     sourceLibrary: libraryRows.map((row) => ({ id: row.id as string, name: row.name as string, platform: row.platform as "YOUTUBE" | "PODCAST", channelUrl: row.channel_url as string, externalChannelId: row.external_channel_id as string, enabled: Boolean(row.enabled), selectedByDefault: Boolean(row.selected_by_default) })), latestRunSources,
     sourcesChecked: Number(latestRun?.sources_checked ?? 0), latestRunId: latestRun?.id as string ?? null, lastRunAt: latestRun?.started_at as string ?? null,
     currentRunStatus: latestRun?.status as ProcessingRunStatus ?? "NOT_STARTED",
+    runType: latestRun?.run_type as DashboardSnapshot["runType"] ?? null,
+    batchSubmittedCount: Number(latestRun?.batch_submitted_count ?? 0), batchEligibleCount: Number(latestRun?.batch_eligible_count ?? 0),
+    batchDuplicateCount: Number(latestRun?.batch_duplicate_count ?? 0), batchInvalidCount: Number(latestRun?.batch_invalid_count ?? 0),
+    batchAlreadyProcessedCount: Number(latestRun?.batch_already_processed_count ?? 0), batchItems,
     activeSourceNames: [...new Set(episodes.filter((episode) => active.has(episode.status)).map((episode) => episode.sourceName))],
     episodesDiscovered: Number(latestRun?.episodes_discovered ?? 0), episodesSelected: Number(latestRun?.episodes_selected ?? 0), episodesDeferred: Number(latestRun?.episodes_deferred ?? 0),
     discoveryStart: latestRun?.discovery_start as string ?? null, discoveryEnd: latestRun?.discovery_end as string ?? null, youtubeMaxVideosPerCreator: latestRun?.youtube_max_videos_per_creator as number ?? null,

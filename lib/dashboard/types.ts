@@ -26,6 +26,12 @@ export type DashboardRunFailure = {
   occurredAt: string;
 };
 
+export type DashboardUrlBatchItem = {
+  lineNumber: number; submittedUrl: string; normalizedUrl: string | null; videoId: string | null;
+  status: string; errorMessage: string | null; episodeId: string | null;
+  episodeTitle: string | null; sourceUrl: string | null; sourceName: string | null;
+};
+
 export type DashboardSnapshot = {
   aiInstructions: {
     extraction: { value: string; version: number; updatedAt: string };
@@ -38,6 +44,13 @@ export type DashboardSnapshot = {
   latestRunId: string | null;
   lastRunAt: string | null;
   currentRunStatus: ProcessingRunStatus | "NOT_STARTED";
+  runType: "CREATOR_DISCOVERY" | "SPECIFIC_URL_BATCH" | null;
+  batchSubmittedCount: number;
+  batchEligibleCount: number;
+  batchDuplicateCount: number;
+  batchInvalidCount: number;
+  batchAlreadyProcessedCount: number;
+  batchItems: DashboardUrlBatchItem[];
   activeSourceNames: string[];
   episodesDiscovered: number;
   episodesSelected: number;

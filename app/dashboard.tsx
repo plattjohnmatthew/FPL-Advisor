@@ -8,6 +8,7 @@ import type { ResearchScopePreset } from "@/lib/research/schema";
 import { DEFAULT_RESEARCH_SCOPE } from "@/lib/research/schema";
 import { formatDisplayDate } from "@/lib/dates/display";
 import { DEFAULT_YOUTUBE_MAX_VIDEOS_PER_CREATOR, MAX_YOUTUBE_VIDEOS_PER_CREATOR } from "@/lib/processing/options";
+import { MAX_SPECIFIC_VIDEO_URLS, parseSpecificVideoUrls } from "@/lib/processing/youtube-url-batch";
 
 const sectionLabels: Record<typeof REPORT_SECTION_KEYS[number], string> = {
   teamsToTarget: "Upcoming fixtures and teams to target",
@@ -36,14 +37,15 @@ function localDateValue(daysAgo: number) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function EpisodeStatus({ episode, showSource = false }: { episode: DashboardEpisode; showSource?: boolean }) {
+function EpisodeStatus({ episode, showSource = false, dateRange }: { episode: DashboardEpisode; showSource?: boolean; dateRange?: { from: string; to: string } }) {
+  const episodeHref = `/episodes/${episode.episodeId}${dateRange ? `?from=${encodeURIComponent(dateRange.from)}&to=${encodeURIComponent(dateRange.to)}` : ""}`;
   return (
     <li className="episode-row">
       <div className="episode-content">
         <div className="episode-main">
           <span className={`status-dot status-${episode.status.toLowerCase()}`} aria-hidden="true" />
           <div>
-            <p className="episode-title">{episode.sourceUrl ? <a href={episode.sourceUrl} target="_blank" rel="noreferrer">{episode.title}</a> : episode.title}</p>
+            <p className="episode-title"><a href={episodeHref}>{episode.title}</a></p>
             {showSource && <p className="episode-source">{episode.sourceName}</p>}
             {episode.publishedAt && <p className="episode-source">Published {formatDisplayDate(episode.publishedAt)} · {episode.insightCount} insight{episode.insightCount === 1 ? "" : "s"}</p>}
             {showSource && <p className="episode-source">Transcript: {humanizeStatus(episode.transcriptStatus)} · Extraction: {humanizeStatus(episode.extractionStatus)}</p>}
@@ -82,11 +84,15 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
   const [channelUrl, setChannelUrl] = useState("");
   const [sourceMessage, setSourceMessage] = useState<string | null>(null);
   const [isSavingSources, setIsSavingSources] = useState(false);
+  const [specificUrls, setSpecificUrls] = useState("");
+  const [isProcessingUrls, setIsProcessingUrls] = useState(false);
   const [extractionInstructions, setExtractionInstructions] = useState(initialSnapshot.aiInstructions.extraction.value);
   const [synthesisInstructions, setSynthesisInstructions] = useState(initialSnapshot.aiInstructions.synthesis.value);
   const [isSavingInstructions, setIsSavingInstructions] = useState(false);
   const [instructionsMessage, setInstructionsMessage] = useState<string | null>(null);
   const [instructionsError, setInstructionsError] = useState<string | null>(null);
+  const [processingOpen, setProcessingOpen] = useState(["RUNNING", "CANCELLING"].includes(initialSnapshot.currentRunStatus));
+  const [processingMode, setProcessingMode] = useState<"CREATORS" | "URLS">("CREATORS");
 
   async function refreshSnapshot(period?: { fromDate: string; toDate: string }) {
     const params = new URLSearchParams({ timezoneOffsetMinutes: String(new Date().getTimezoneOffset()) });
@@ -139,6 +145,23 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
     }
   }
 
+  async function processSpecificUrls() {
+    setIsProcessingUrls(true); setActionError(null);
+    setSnapshot((current) => ({ ...current, currentRunStatus: "RUNNING", runType: "SPECIFIC_URL_BATCH" }));
+    const timer = window.setInterval(() => void refreshSnapshot().catch(() => undefined), 350);
+    try {
+      const response = await fetch("/api/processing-runs/url-batch", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ urls: specificUrls }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error ?? "The URL batch could not be processed.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "The URL batch could not be processed.");
+    } finally {
+      window.clearInterval(timer); await refreshSnapshot().catch(() => undefined); setIsProcessingUrls(false);
+    }
+  }
+
   async function saveSourceSelection(sourceId: string, selected: boolean) {
     const next = snapshot.sourceLibrary.map((source) => source.id === sourceId ? { ...source, selectedByDefault: selected } : source);
     const selectedSourceIds = next.filter((source) => source.enabled && source.selectedByDefault).map((source) => source.id);
@@ -163,23 +186,13 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
   async function updateInstructions(method: "PUT" | "DELETE") {
     setIsSavingInstructions(true); setInstructionsMessage(null); setInstructionsError(null);
     try {
-      const response = await fetch("/api/prompt-settings", {
-        method,
-        headers: method === "PUT" ? { "Content-Type": "application/json" } : undefined,
-        body: method === "PUT" ? JSON.stringify({ extractionInstructions, synthesisInstructions }) : undefined,
-      });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Unable to save AI instructions.");
-      const next = {
-        extraction: body.settings.EXTRACTION_CUSTOM_INSTRUCTIONS,
-        synthesis: body.settings.SYNTHESIS_CUSTOM_INSTRUCTIONS,
-      };
-      setExtractionInstructions(next.extraction.value); setSynthesisInstructions(next.synthesis.value);
-      setSnapshot((current) => ({ ...current, aiInstructions: next }));
+      const response = await fetch("/api/prompt-settings", { method, headers: method === "PUT" ? { "Content-Type": "application/json" } : undefined, body: method === "PUT" ? JSON.stringify({ extractionInstructions, synthesisInstructions }) : undefined });
+      const body = await response.json(); if (!response.ok) throw new Error(body.error ?? "Unable to save AI instructions.");
+      const next = { extraction: body.settings.EXTRACTION_CUSTOM_INSTRUCTIONS, synthesis: body.settings.SYNTHESIS_CUSTOM_INSTRUCTIONS };
+      setExtractionInstructions(next.extraction.value); setSynthesisInstructions(next.synthesis.value); setSnapshot((current) => ({ ...current, aiInstructions: next }));
       setInstructionsMessage(method === "DELETE" ? "Default instructions restored. Existing outputs were not changed." : "Instructions saved. They apply only to future AI calls.");
-    } catch (error) {
-      setInstructionsError(error instanceof Error ? error.message : "Unable to save AI instructions.");
-    } finally { setIsSavingInstructions(false); }
+    } catch (error) { setInstructionsError(error instanceof Error ? error.message : "Unable to save AI instructions."); }
+    finally { setIsSavingInstructions(false); }
   }
 
   async function askResearch(event: React.FormEvent<HTMLFormElement>) {
@@ -236,38 +249,43 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
     } finally { setIsSynthesizing(false); }
   }
 
-  const runIsActive = isStarting || ["RUNNING", "CANCELLING"].includes(snapshot.currentRunStatus);
+  const runIsActive = isStarting || isProcessingUrls || ["RUNNING", "CANCELLING"].includes(snapshot.currentRunStatus);
   const selectedCreators = snapshot.sourceLibrary.filter((source) => source.enabled && source.selectedByDefault);
   const filteredCreators = snapshot.sourceLibrary.filter((source) => source.name.toLowerCase().includes(creatorSearch.toLowerCase()));
   const remainingCount = snapshot.episodes.filter((episode) => !["COMPLETED", "FAILED", "CANCELLED"].includes(episode.status)).length;
   const insightById = new Map(snapshot.supportingInsights.map((insight) => [insight.id, insight]));
+  let parsedUrls: ReturnType<typeof parseSpecificVideoUrls> = []; let urlValidationError: string | null = null;
+  try { parsedUrls = parseSpecificVideoUrls(specificUrls); } catch (error) { urlValidationError = error instanceof Error ? error.message : "URL batch is invalid."; }
+  const validUrlCount = parsedUrls.filter((item) => item.status === "VALID").length;
 
   return (
-    <main className="dashboard-shell">
-      <header className="page-header">
-        <p className="eyebrow">Personal FPL knowledge base</p>
-        <h1>FPL Research</h1>
-        <p>Process your trusted sources, review what happened, and build a research history over time.</p>
+    <main className="dashboard-shell" id="main-content">
+      <header className="page-header dashboard-hero">
+        <div><p className="eyebrow">Personal FPL knowledge base</p><h1>Your FPL intelligence</h1><p>Creator opinions, structured into decisions you can trace back to every source.</p></div>
+        <div className="hero-actions"><a className="button-link" href="#processing" onClick={() => setProcessingOpen(true)}>Process new content</a><p>Last refreshed {formatRunDate(snapshot.lastRunAt)}</p></div>
       </header>
 
       {(snapshot.loadError || actionError) && (
         <div className="alert" role="alert">{actionError ?? snapshot.loadError}</div>
       )}
 
-      <section className="panel" aria-labelledby="processing-heading">
+      <section className={`panel processing-panel ${processingOpen || runIsActive ? "is-open" : ""}`} id="processing" aria-labelledby="processing-heading">
         <div className="section-heading">
           <div>
-            <p className="section-number">01</p>
+            <p className="section-number">Processing</p>
             <h2 id="processing-heading">Processing</h2>
+            <p className="section-description">{runIsActive ? "New content is being processed now." : `${selectedCreators.length} creators selected · latest run ${humanizeStatus(snapshot.currentRunStatus)}`}</p>
           </div>
           {runIsActive ? (
             <button type="button" onClick={stopProcessing} disabled={isStopping || snapshot.currentRunStatus === "CANCELLING"}>
               {snapshot.currentRunStatus === "CANCELLING" ? "Stop requested…" : isStopping ? "Requesting stop…" : "Stop processing"}
             </button>
-          ) : <button type="button" onClick={processEpisodes} disabled={Boolean(snapshot.loadError) || !processingFromDate || !processingToDate || selectedCreators.length === 0 || isSavingSources}>Process new content</button>}
+          ) : <button className="secondary-button" type="button" aria-expanded={processingOpen} onClick={() => setProcessingOpen((open) => !open)}>{processingOpen ? "Close controls" : "Open controls"}</button>}
         </div>
 
-        {!runIsActive && (
+        {!runIsActive && processingOpen && <div className="processing-workspace">
+          <div className="mode-tabs" role="tablist" aria-label="Processing method"><button type="button" role="tab" aria-selected={processingMode === "CREATORS"} className={processingMode === "CREATORS" ? "active" : "secondary-button"} onClick={() => setProcessingMode("CREATORS")}>Selected creators</button><button type="button" role="tab" aria-selected={processingMode === "URLS"} className={processingMode === "URLS" ? "active" : "secondary-button"} onClick={() => setProcessingMode("URLS")}>Specific URLs</button></div>
+        {processingMode === "CREATORS" && (
           <>
           <details className="creator-selector">
             <summary>{selectedCreators.length} creator{selectedCreators.length === 1 ? "" : "s"} selected</summary>
@@ -285,8 +303,22 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
             <label>Max YouTube videos per creator<input type="number" min="1" max={MAX_YOUTUBE_VIDEOS_PER_CREATOR} value={youtubeLimit} onChange={(event) => setYoutubeLimit(Number(event.target.value))} /></label>
             <p className="helper-text">Already processed episodes will be skipped. Maximum allowed: {MAX_YOUTUBE_VIDEOS_PER_CREATOR} per creator.</p>
           </div>
+          <button type="button" onClick={processEpisodes} disabled={Boolean(snapshot.loadError) || !processingFromDate || !processingToDate || selectedCreators.length === 0 || isSavingSources}>Start creator processing</button>
           </>
         )}
+
+        {processingMode === "URLS" && <div className="specific-video-panel">
+          <div className="specific-video-content">
+            <label>Paste one YouTube video URL per line
+              <textarea rows={7} value={specificUrls} onChange={(event) => setSpecificUrls(event.target.value)} placeholder={"https://www.youtube.com/watch?v=…\nhttps://youtu.be/…"} />
+            </label>
+            <p className="helper-text">{parsedUrls.length} URL{parsedUrls.length === 1 ? "" : "s"} detected · {validUrlCount} eligible · maximum {MAX_SPECIFIC_VIDEO_URLS}</p>
+            {urlValidationError && <p className="episode-error">{urlValidationError}</p>}
+            {parsedUrls.some((item) => item.status !== "VALID") && <ul className="url-validation-list">{parsedUrls.filter((item) => item.status !== "VALID").map((item) => <li key={item.lineNumber}><strong>Line {item.lineNumber} · {humanizeStatus(item.status)}:</strong> {item.submittedUrl} — {item.errorMessage}</li>)}</ul>}
+            <button type="button" onClick={() => void processSpecificUrls()} disabled={Boolean(urlValidationError) || validUrlCount === 0}>Process URLs</button>
+          </div>
+        </div>}
+        </div>}
 
         <dl className="metrics">
           <div><dt>Last run</dt><dd>{formatRunDate(snapshot.lastRunAt)}</dd></div>
@@ -299,7 +331,7 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
           <div className="live-run" aria-live="polite">
             <div className="live-heading">
               <div>
-                <p className="live-kicker"><span className="pulse" /> {snapshot.currentRunStatus === "CANCELLING" ? "Stopping after current operation…" : "Run in progress"}</p>
+                <p className="live-kicker"><span className="pulse" /> {snapshot.currentRunStatus === "CANCELLING" ? "Stopping after current operation…" : snapshot.runType === "SPECIFIC_URL_BATCH" ? "Processing URL batch" : "Run in progress"}</p>
                 <h3>{snapshot.activeSourceNames.length > 0 ? snapshot.activeSourceNames.join(", ") : "Preparing enabled sources…"}</h3>
               </div>
               <div className="count-pair">
@@ -309,6 +341,7 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
               </div>
             </div>
             <p className="discovery-count">{snapshot.episodesDiscovered} new episodes discovered</p>
+            {snapshot.runType === "SPECIFIC_URL_BATCH" && <p className="helper-text">{snapshot.batchSubmittedCount} submitted · {snapshot.batchEligibleCount} normalized eligible · {snapshot.batchAlreadyProcessedCount} already processed · {snapshot.batchInvalidCount} invalid · {snapshot.batchDuplicateCount} duplicate</p>}
             {snapshot.discoveryStart && snapshot.discoveryEnd && <p className="helper-text">Period: {formatRunDate(snapshot.discoveryStart)} – {formatDisplayDate(Date.parse(snapshot.discoveryEnd) - 1, { dateStyle: "medium", timeStyle: "short" })} · YouTube limit: {snapshot.youtubeMaxVideosPerCreator} per creator · {snapshot.episodesSelected} selected · {snapshot.episodesDeferred} deferred</p>}
             {snapshot.episodes.length > 0 && <ul className="episode-list">{snapshot.episodes.map((episode) => <EpisodeStatus key={episode.episodeId} episode={episode} showSource />)}</ul>}
           </div>
@@ -325,17 +358,23 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
         )}
         {snapshot.runFailures.length > 0 && (
           <div className="failure-summary">
-            <h3>Run-level failures</h3>
-            <ul>{snapshot.runFailures.map((failure, index) => (
+            <h3>{snapshot.runFailures.length} run-level issue{snapshot.runFailures.length === 1 ? "" : "s"}</h3>
+            <p className="helper-text">Completed episode data remains saved. Expand details when troubleshooting.</p>
+            <details className="technical-details"><summary>Technical details</summary><ul>{snapshot.runFailures.map((failure, index) => (
               <li key={`${failure.stage}-${failure.occurredAt}-${index}`}>
                 <strong>{humanizeStatus(failure.stage)}</strong>: {failure.errorMessage} ({failure.retryable ? "retryable" : "manual review required"})
               </li>
-            ))}</ul>
+            ))}</ul></details>
           </div>
         )}
+        {snapshot.runType === "SPECIFIC_URL_BATCH" && snapshot.batchItems.length > 0 && <div className="batch-results">
+          <h3>{["PARTIAL"].includes(snapshot.currentRunStatus) ? "Batch partially completed" : snapshot.currentRunStatus === "COMPLETED" ? "Batch complete" : "URL batch"}</h3>
+          <p className="helper-text">{snapshot.batchSubmittedCount} submitted · {snapshot.batchItems.filter((item) => item.status === "COMPLETED").length} processed · {snapshot.batchAlreadyProcessedCount} already processed · {snapshot.batchItems.filter((item) => item.status === "FAILED").length} failed · {snapshot.batchInvalidCount} invalid · {snapshot.batchDuplicateCount} duplicate</p>
+          <ul className="episode-list">{snapshot.batchItems.map((item) => <li className="episode-row" key={item.lineNumber}><div className="episode-content"><p className="episode-title">{item.sourceUrl ? <a href={item.sourceUrl} target="_blank" rel="noreferrer">{item.episodeTitle ?? item.normalizedUrl}</a> : item.submittedUrl}</p>{item.sourceName && <p className="episode-source">{item.sourceName}</p>}{item.errorMessage && <p className="episode-error">{item.errorMessage}</p>}</div><span className={`status-label status-label-${item.status.toLowerCase()}`}>{humanizeStatus(item.status)}</span></li>)}</ul>
+        </div>}
       </section>
 
-      <section className="panel" aria-labelledby="instructions-heading">
+      <section className="panel dashboard-instructions" aria-labelledby="instructions-heading">
         <div className="section-heading compact-heading">
           <div><p className="section-number">02</p><h2 id="instructions-heading">AI instructions</h2></div>
         </div>
@@ -358,13 +397,14 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
         {instructionsError && <p className="episode-error" role="alert">{instructionsError}</p>}
       </section>
 
-      <section className="panel" aria-labelledby="latest-heading">
+      <section className="panel intelligence-panel" id="intelligence" aria-labelledby="latest-heading">
         <div className="section-heading compact-heading">
-          <div><p className="section-number">03</p><h2 id="latest-heading">Latest transcripts</h2></div>
+          <div><p className="section-number">Latest intelligence</p><h2 id="latest-heading">What creators are saying</h2></div>
           <p>{snapshot.recentEpisodes.length} episode{snapshot.recentEpisodes.length === 1 ? "" : "s"} · {snapshot.defaultPeriodLabel}</p>
         </div>
+        <span className="anchor-target" id="content" aria-hidden="true" />
         {snapshot.recentEpisodes.length > 0 ? (
-          <ul className="episode-list latest-list">{snapshot.recentEpisodes.map((episode) => <EpisodeStatus key={episode.episodeId} episode={episode} showSource />)}</ul>
+          <ul className="episode-list latest-list">{snapshot.recentEpisodes.map((episode) => <EpisodeStatus key={episode.episodeId} episode={episode} showSource dateRange={{ from: snapshot.defaultFromDate, to: snapshot.defaultToDate }} />)}</ul>
         ) : (
           <div className="empty-state"><p>No episodes found for this period.</p></div>
         )}
@@ -394,8 +434,8 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
             <span key={id}>{index > 0 && ", "}<a href={`#insight-${id}`}>{insightById.get(id)?.sourceName ?? id}</a></span>
           ))}</p>}
           {snapshot.synthesis && REPORT_SECTION_KEYS.filter((key) => snapshot.synthesis!.sections[key].length > 0).map((key) => (
-            <section className="report-section" key={key}>
-              <h3>{sectionLabels[key]}</h3>
+            <details className="report-section" key={key}>
+              <summary><h3>{sectionLabels[key]}</h3><span>{snapshot.synthesis!.sections[key].length} finding{snapshot.synthesis!.sections[key].length === 1 ? "" : "s"}</span></summary>
               {snapshot.synthesis!.sections[key].length > 0 ? (
                 <div className="report-items">{snapshot.synthesis!.sections[key].map((item, index) => (
                   <article className="report-item" key={`${key}-${index}`}>
@@ -404,7 +444,8 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
                     <h4>{item.subject}</h4>
                     <p>{item.summary}</p>
                     <p><strong>Why:</strong> {item.reasoning}</p>
-                    <p className="insight-meta">{item.sourceCount} supporting creator{item.sourceCount === 1 ? "" : "s"}{item.timeHorizon ? ` · ${humanizeStatus(item.timeHorizon)} horizon` : ""}</p>
+                    <p className="insight-meta">{item.sourceCount} supporting creator{item.sourceCount === 1 ? "" : "s"}: {item.supportingCreatorNames.join(", ")}{item.timeHorizon ? ` · ${humanizeStatus(item.timeHorizon)} horizon` : ""}</p>
+                    <p className="insight-meta">Attention: {item.attention.insightCount} insight{item.attention.insightCount === 1 ? "" : "s"} across {item.attention.episodeCount} episode{item.attention.episodeCount === 1 ? "" : "s"} · {item.attention.creatorCount} distinct creator{item.attention.creatorCount === 1 ? "" : "s"}</p>
                     {item.caveat && <p className="report-caveat"><strong>Caveat:</strong> {item.caveat}</p>}
                     <p className="evidence-links">Evidence: {item.supportingInsightIds.map((id, evidenceIndex) => (
                       <span key={id}>{evidenceIndex > 0 && ", "}{insightById.get(id) ? <a href={insightById.get(id)!.sourceUrl} target="_blank" rel="noreferrer">{insightById.get(id)!.sourceName} — {insightById.get(id)!.episodeTitle} ({formatDisplayDate(insightById.get(id)!.publishedAt)})</a> : "Source unavailable"}</span>
@@ -412,7 +453,7 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
                   </article>
                 ))}</div>
               ) : <p className="no-findings">No material developments.</p>}
-            </section>
+            </details>
           ))}
         </div>
 
@@ -425,7 +466,7 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
                 <div className="position-grid">{decision.positions.map((position) => (
                   <div key={`${decision.id}-${position.position}`}>
                     <h5>{position.position}</h5>
-                    <p><strong>Supported by:</strong> {position.creators.join(", ")}</p>
+                    <p><strong>Supported by {position.creatorCount} distinct creator{position.creatorCount === 1 ? "" : "s"}:</strong> {position.creators.join(", ")}</p>
                     <p>{position.reasoning}</p>
                     <p className="evidence-links">Evidence: {position.supportingInsightIds.map((id, index) => {
                       const evidence = insightById.get(id);
@@ -440,7 +481,13 @@ export default function Dashboard({ initialSnapshot }: { initialSnapshot: Dashbo
         )}
       </section>
 
-      <section className="panel research-panel" aria-labelledby="research-heading">
+      <section className="panel explore-panel" id="explore" aria-labelledby="entity-explorer-heading">
+        <div className="section-heading compact-heading"><div><p className="section-number">Browse</p><h2 id="entity-explorer-heading">Player and team insights</h2></div></div>
+        <form className="entity-search" action="/entities" method="get"><input type="hidden" name="range" value="30d" /><label htmlFor="dashboard-entity-query">Search stored entities</label><div><input id="dashboard-entity-query" name="q" minLength={2} placeholder="Saka, Arsenal, Watkins…" /><button type="submit">Search</button></div></form>
+        <p className="helper-text">Searches canonical player/team names and aliases. Default scope is Last 30 days and makes no OpenAI call.</p>
+      </section>
+
+      <section className="panel research-panel" id="ask" aria-labelledby="research-heading">
         <div className="section-heading compact-heading"><div><p className="section-number">04</p><h2 id="research-heading">Ask FPL Research</h2></div></div>
         {researchAnswers.length > 0 && <div className="research-history" aria-live="polite">{researchAnswers.map((response, responseIndex) => (
           <article className="research-answer" key={`${response.question}-${responseIndex}`}>

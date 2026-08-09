@@ -11,7 +11,7 @@ export const REPORT_INTERPRETATIONS = [
   "CREATOR_CLAIM", "DISAGREEMENT",
 ] as const;
 
-export const ReportItemSchema = z.object({
+const GeneratedReportItemSchema = z.object({
   subject: z.string().trim().min(1),
   sentiment: z.enum(["POSITIVE", "MIXED", "NEGATIVE", "NEUTRAL"]),
   summary: z.string().trim().min(1),
@@ -21,6 +21,15 @@ export const ReportItemSchema = z.object({
   caveat: z.string().trim().min(1).nullable(),
   interpretation: z.enum(REPORT_INTERPRETATIONS),
   supportingInsightIds: z.array(z.string().uuid()).min(1),
+});
+
+export const ReportItemSchema = GeneratedReportItemSchema.extend({
+  supportingCreatorNames: z.array(z.string()).default([]),
+  attention: z.object({
+    insightCount: z.number().int().min(1),
+    episodeCount: z.number().int().min(1),
+    creatorCount: z.number().int().min(1),
+  }).default({ insightCount: 1, episodeCount: 1, creatorCount: 1 }),
 });
 
 export const RunSummarySchema = z.object({
@@ -40,7 +49,7 @@ export function createRunSummaryOutputSchema(
 ) {
   if (insightIds.length === 0) throw new Error("A run summary requires at least one allowed insight ID.");
   const insightId = z.enum(insightIds as [string, ...string[]]);
-  const reportItem = ReportItemSchema.extend({
+  const reportItem = GeneratedReportItemSchema.extend({
     supportingInsightIds: z.array(insightId).min(1),
     interpretation: allowMultiCreatorInterpretation
       ? ReportItemSchema.shape.interpretation
@@ -67,7 +76,7 @@ export type SummaryInsightContext = {
 };
 export type SummarySplitContext = {
   id: string; question: string; unresolvedQuestion: string | null; implication: string | null;
-  positions: Array<{ position: string; reasoning: string; supportingInsightIds: string[]; creators: string[] }>;
+  positions: Array<{ position: string; reasoning: string; supportingInsightIds: string[]; creators: string[]; creatorCount: number }>;
 };
 export type RunSummaryContext = {
   scope: { type: "RUN"; runId: string } | { type: "DATE_RANGE"; fromDate: string; toDate: string };

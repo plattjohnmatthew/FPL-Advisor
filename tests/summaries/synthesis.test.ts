@@ -37,8 +37,8 @@ const context: RunSummaryContext = {
     { id: insightB, sourceId: "source-b", sourceName: "Creator B", episodeId: "episode-b", episodeTitle: "B", sourceUrl: "https://example.com/b", publishedAt: "2026-08-08T10:00:00Z", claim: "Buy Player", reasoning: "Role", primaryCategory: "TRANSFER_DECISION", recommendation: "BUY", timeHorizon: "SHORT", entities: [{ type: "PLAYER", name: "Player", role: "SUBJECT" }] },
   ],
   splitDecisions: [{ id: splitId, question: "Buy now or wait?", unresolvedQuestion: "Timing", implication: "Transfer priority", positions: [
-    { position: "BUY", reasoning: "Upside", supportingInsightIds: [insightA], creators: ["Creator A"] },
-    { position: "WAIT", reasoning: "Uncertainty", supportingInsightIds: [insightB], creators: ["Creator B"] },
+    { position: "BUY", reasoning: "Upside", supportingInsightIds: [insightA], creators: ["Creator A"], creatorCount: 1 },
+    { position: "WAIT", reasoning: "Uncertainty", supportingInsightIds: [insightB], creators: ["Creator B"], creatorCount: 1 },
   ] }],
 };
 
@@ -50,8 +50,8 @@ function generation(): RunSummaryGeneration {
       overviewSupportingInsightIds: [insightA, insightB],
       sections: {
         teamsToTarget: [], teamsToAvoid: [],
-        playersToBuy: [{ subject: "Player", sentiment: "POSITIVE", summary: "Two creators support buying.", reasoning: "Fixtures and role.", sourceCount: 99, timeHorizon: "SHORT", caveat: null, interpretation: "CONSENSUS", supportingInsightIds: [insightA, insightB] }],
-        playersToSell: [], mostDiscussedPlayers: [{ subject: "Player", sentiment: "POSITIVE", summary: "Player drew cross-source attention.", reasoning: "Two independent episodes discussed the same action.", sourceCount: 2, timeHorizon: "SHORT", caveat: null, interpretation: "CONSENSUS", supportingInsightIds: [insightA, insightB] }],
+        playersToBuy: [{ subject: "Player", sentiment: "POSITIVE", summary: "Two creators support buying.", reasoning: "Fixtures and role.", sourceCount: 99, timeHorizon: "SHORT", caveat: null, interpretation: "CONSENSUS", supportingInsightIds: [insightA, insightB], supportingCreatorNames: [], attention: { insightCount: 1, episodeCount: 1, creatorCount: 1 } }],
+        playersToSell: [], mostDiscussedPlayers: [{ subject: "Player", sentiment: "POSITIVE", summary: "Player drew cross-source attention.", reasoning: "Two independent episodes discussed the same action.", sourceCount: 2, timeHorizon: "SHORT", caveat: null, interpretation: "CONSENSUS", supportingInsightIds: [insightA, insightB], supportingCreatorNames: [], attention: { insightCount: 1, episodeCount: 1, creatorCount: 1 } }],
         fixtureSwings: [], chipStrategy: [], undervaluedPlayers: [], overpricedPlayers: [], watchlist: [],
       },
       splitDecisionIds: [splitId],
@@ -113,7 +113,7 @@ test("synthesis failure is retryable without ingestion work", async () => {
 
 test("unknown insight and split IDs cannot be persisted", async () => {
   const bad = generation();
-  bad.summary.sections.watchlist = [{ subject: "Invented", sentiment: "NEUTRAL", summary: "Invented", reasoning: "None", sourceCount: 1, timeHorizon: null, caveat: null, interpretation: "CREATOR_CLAIM", supportingInsightIds: ["30000000-0000-4000-8000-000000000001"] }];
+  bad.summary.sections.watchlist = [{ subject: "Invented", sentiment: "NEUTRAL", summary: "Invented", reasoning: "None", sourceCount: 1, timeHorizon: null, caveat: null, interpretation: "CREATOR_CLAIM", supportingInsightIds: ["30000000-0000-4000-8000-000000000001"], supportingCreatorNames: [], attention: { insightCount: 1, episodeCount: 1, creatorCount: 1 } }];
   const repository = new MemoryRepository();
   await assert.rejects(() => new RunSummarySynthesisService(repository, new FakeRunSummaryGenerator(bad)).synthesizeRun("run-1", "PARTIAL"), /unknown insight ID/);
   assert.equal(repository.persisted.length, 0);

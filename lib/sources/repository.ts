@@ -39,4 +39,24 @@ export class SupabaseSourceLibraryRepository {
     if (error) throw new Error(`Unable to add creator: ${error.message}`);
     return { source: mapSource(data), existed: false };
   }
+
+  async upsertYouTubeFromVideo(channel: ResolvedYouTubeChannel) {
+    const supabase = createSupabaseServerClient();
+    const { data: existing, error: findError } = await supabase.from("sources")
+      .select("id, name, platform, channel_url, external_channel_id, enabled, selected_by_default")
+      .eq("platform", "YOUTUBE").eq("external_channel_id", channel.externalChannelId).maybeSingle();
+    if (findError) throw new Error(`Unable to check creator identity: ${findError.message}`);
+    if (existing) {
+      const { data, error } = await supabase.from("sources").update({ name: channel.name, channel_url: channel.channelUrl })
+        .eq("id", existing.id).select("id, name, platform, channel_url, external_channel_id, enabled, selected_by_default").single();
+      if (error) throw new Error(`Unable to refresh creator metadata: ${error.message}`);
+      return { source: mapSource(data), existed: true };
+    }
+    const { data, error } = await supabase.from("sources").insert({
+      name: channel.name, platform: "YOUTUBE", channel_url: channel.channelUrl,
+      external_channel_id: channel.externalChannelId, enabled: true, selected_by_default: false,
+    }).select("id, name, platform, channel_url, external_channel_id, enabled, selected_by_default").single();
+    if (error) throw new Error(`Unable to add video creator: ${error.message}`);
+    return { source: mapSource(data), existed: false };
+  }
 }

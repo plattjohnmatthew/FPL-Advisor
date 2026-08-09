@@ -17,6 +17,7 @@ import type { NormalizedTranscriptResult } from "@/lib/transcripts/provider";
 import { batchValues } from "@/lib/supabase/batch";
 import { validateExtractionForPersistence } from "@/lib/insights/schema";
 import type { ProcessingRunOptions } from "./options";
+import type { NormalizedUrlItem } from "./youtube-url-batch";
 
 type EpisodeRow = {
   id: string;
@@ -249,6 +250,76 @@ export class SupabaseProcessingRepository implements ProcessingRepository {
     };
   }
 
+  async hasPersistedExtraction(episodeId: string) {
+    const supabase = createSupabaseServerClient();
+    const [extraction, insights] = await Promise.all([
+      supabase.from("episode_extractions").select("id", { count: "exact", head: true }).eq("episode_id", episodeId),
+      supabase.from("insights").select("id", { count: "exact", head: true }).eq("episode_id", episodeId),
+    ]);
+    if (extraction.error || insights.error) throw new Error(`Unable to check stored extraction: ${extraction.error?.message ?? insights.error?.message}`);
+    return (extraction.count ?? 0) > 0 && (insights.count ?? 0) > 0;
+  }
+
+  async findEpisodeByExternalId(externalEpisodeId: string) {
+    const { data, error } = await createSupabaseServerClient().from("episodes")
+      .select("id, source_id, external_episode_id, title, source_url, published_at, duration_seconds, gameweek")
+      .eq("external_episode_id", externalEpisodeId).limit(1).maybeSingle();
+    if (error) throw new Error(`Unable to check existing video: ${error.message}`);
+    return data ? mapEpisode(data as EpisodeRow) : null;
+  }
+
+  async isEpisodeFullyProcessed(episodeId: string) {
+    const supabase = createSupabaseServerClient();
+    const [transcript, extraction, insight] = await Promise.all([
+      supabase.from("transcripts").select("id", { count: "exact", head: true }).eq("episode_id", episodeId),
+      supabase.from("episode_extractions").select("id", { count: "exact", head: true }).eq("episode_id", episodeId),
+      supabase.from("insights").select("id", { count: "exact", head: true }).eq("episode_id", episodeId),
+    ]);
+    const error = transcript.error ?? extraction.error ?? insight.error;
+    if (error) throw new Error(`Unable to determine video processing state: ${error.message}`);
+    return [transcript, extraction, insight].every((result) => (result.count ?? 0) > 0);
+  }
+
+  async createSpecificUrlBatchRun(items: NormalizedUrlItem[]) {
+    const supabase = createSupabaseServerClient();
+    const eligible = items.filter((item) => item.status === "VALID").length;
+    const duplicates = items.filter((item) => item.status === "DUPLICATE_IN_BATCH").length;
+    const invalid = items.filter((item) => item.status === "INVALID_URL" || item.status === "UNSUPPORTED_URL").length;
+    const { data, error } = await supabase.from("processing_runs").insert({
+      status: "RUNNING", run_type: "SPECIFIC_URL_BATCH", batch_submitted_count: items.length,
+      batch_eligible_count: eligible, batch_duplicate_count: duplicates, batch_invalid_count: invalid,
+    }).select("id").single();
+    if (error?.code === "23505") throw new RunAlreadyInProgressError();
+    if (error) throw new Error(`Unable to create URL batch run: ${error.message}`);
+    const runId = data.id as string;
+    const { error: itemError } = await supabase.from("processing_run_url_items").insert(items.map((item) => ({
+      run_id: runId, line_number: item.lineNumber, submitted_url: item.submittedUrl,
+      normalized_url: item.normalizedUrl, video_id: item.videoId, status: item.status, error_message: item.errorMessage,
+    })));
+    if (itemError) throw new Error(`Unable to store URL batch items: ${itemError.message}`);
+    return runId;
+  }
+
+  async linkRunSource(runId: string, sourceId: string) {
+    const { error } = await createSupabaseServerClient().from("processing_run_sources")
+      .upsert({ processing_run_id: runId, source_id: sourceId }, { onConflict: "processing_run_id,source_id", ignoreDuplicates: true });
+    if (error) throw new Error(`Unable to link batch creator: ${error.message}`);
+  }
+
+  async updateUrlBatchItem(runId: string, videoId: string, values: { status: string; episodeId?: string; errorMessage?: string | null }) {
+    const update: Record<string, unknown> = { status: values.status, updated_at: new Date().toISOString() };
+    if (values.episodeId !== undefined) update.episode_id = values.episodeId;
+    if (values.errorMessage !== undefined) update.error_message = values.errorMessage;
+    const { error } = await createSupabaseServerClient().from("processing_run_url_items").update(update)
+      .eq("run_id", runId).eq("video_id", videoId).neq("status", "DUPLICATE_IN_BATCH");
+    if (error) throw new Error(`Unable to update URL batch item: ${error.message}`);
+  }
+
+  async updateUrlBatchAlreadyProcessedCount(runId: string, count: number) {
+    const { error } = await createSupabaseServerClient().from("processing_runs").update({ batch_already_processed_count: count }).eq("id", runId);
+    if (error) throw new Error(`Unable to update URL batch totals: ${error.message}`);
+  }
+
   async getTranscript(episodeId: string) {
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
@@ -348,6 +419,15 @@ export class SupabaseProcessingRepository implements ProcessingRepository {
     if (error) {
       throw new Error(`Unable to create run episode: ${error.message}`);
     }
+  }
+
+  async createCompletedRunEpisode(runId: string, episodeId: string) {
+    const now = new Date().toISOString();
+    const { error } = await createSupabaseServerClient().from("run_episodes").insert({
+      run_id: runId, episode_id: episodeId, status: "COMPLETED", started_at: now, completed_at: now,
+      transcript_status: "READY", extraction_status: "COMPLETED", retry_count: 0,
+    });
+    if (error) throw new Error(`Unable to attach completed video to batch: ${error.message}`);
   }
 
   async transitionRunEpisode(runId: string, episodeId: string, transition: EpisodeTransition) {

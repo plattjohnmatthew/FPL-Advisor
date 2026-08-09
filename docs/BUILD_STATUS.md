@@ -2,9 +2,63 @@
 
 ## Current milestone
 
-Configurable protected AI instructions for extraction and synthesis: complete and deployed.
+Dedicated UX/UI audit and redesign: complete locally; no database migration required.
 
 ## Completed functionality
+
+- Audited the actual locally rendered application before implementation at 1440px and 1024px, including processing controls, creator selection, URL batches, status/errors, synthesis, transcript browsing, chat, entity exploration, episode detail, and prompt settings. Data-dependent empty and failure states were inspected where available.
+- Introduced stable navigation around Intelligence, Ask, Content, Explore, and Settings, plus a skip link and consistent keyboard focus treatment.
+- Reordered the dashboard around product value: freshness and primary processing entry, compact processing status, latest intelligence, Ask, recent content, and entity exploration.
+- Reworked idle processing into progressive disclosure with mutually exclusive Selected creators and Specific URLs modes, while preserving the existing run engine, cancellation, limits, creator persistence, and URL validation.
+- Reduced report scanning cost with an editorial overview, collapsible thematic findings, distinct split-decision treatment, and a bounded recent-content list. Long run errors now sit behind technical-detail disclosure.
+- Moved the existing database-backed AI instructions editor to `/settings`; Save and Reset behavior, protected prompt rules, versioning, and explicit regeneration semantics remain unchanged.
+- Harmonized the dashboard, entity explorer, episode detail, and settings surfaces through a documented responsive visual system in `docs/UI_SYSTEM.md`.
+- Re-ran the actual product after implementation at 1440px, 1024px, and 390px. Verified creator/URL mode switching, processing controls, synthesis display, Ask controls, settings persistence UI, entity search, populated episode detail/entity links, and no horizontal overflow at tested widths.
+- Verified all 132 TypeScript tests, ESLint, TypeScript, and the Next.js 16.3 production build.
+
+- Added a compact Player and team insights search entry on the dashboard plus a server-rendered `/entities` search page over canonical names and aliases. Browsing never creates or mutates entity records.
+- Expanded `/entities/[entityId]` into a complete historical explorer with URL-persisted Last 7 days, Last 30 days, This season, All history, and Custom scopes; Last 30 days is the default.
+- Filters insights at the database relationship query using `episodes.published_at`, never insight creation, transcript fetch, or processing dates, and retains existing entity/episode/date indexes.
+- Added deterministic summary metadata for insight count, episode count, distinct creator count, creator-level sentiment, recommendation distribution, and category distribution without an OpenAI call.
+- Reused the existing creator-opinion aggregation so repeated episodes from one source count once and self-contradiction remains MIXED.
+- Added prominent relevant split-decision cards with competing positions, reasoning, and distinct supporting creator names/counts for the selected period.
+- Added lightweight creator, category, recommendation, newest, oldest, and creator sorting while leaving stored history untouched.
+- Preserved publication scope through search, entity, and episode links. Every insight retains creator, internal episode link, publication date, evidence, and provider-backed YouTube timestamp link where available.
+- Audited the linked corpus: 138 canonical entities (115 players, 23 teams), no exact canonical duplicate groups, and a small set of possible surname/alias collisions retained for manual review rather than unsafe automatic merging.
+- Real read-only validation passed for Arsenal: search found the canonical TEAM, Last 30 days returned 9 insights from 5 episodes and 4 distinct creators, All history retained 9, and a custom Aug 7 range correctly narrowed to 7 insights from 3 episodes and 3 creators. Internal episode navigation preserved the custom scope and exposed clickable episode entities.
+- The linked corpus currently contains no Saka canonical entity or alias, so the requested Saka search correctly returns an empty state rather than demo/fabricated data.
+- Verified 132 TypeScript tests, 131 pgTAP assertions from the unchanged schema, ESLint, TypeScript, and the Next.js 16.3 production build.
+
+- Added read-only `/episodes/[episodeId]` audit pages showing episode identity, creator, publication date, original video, transcript/extraction state, insight count, and every persisted atomic insight for that episode only.
+- Added adjacent claim, reasoning, taxonomy, clickable player/team entities, transcript evidence, human-readable timestamps, and safely constructed YouTube timestamp links. Historical insights without timestamps remain visible without fabricated timing.
+- Made Latest Transcripts episode titles open the internal episode page while keeping a separate **Open original video** action on the audit page.
+- Added lightweight episode filters for category, player/team, and recommendation.
+- Added separate `/entities/[entityId]` player/team insight explorer pages so historical browsing does not leak into or broaden the episode-scoped page. Entity links preserve the current date range where available.
+- Confirmed Supadata already normalizes real offset/duration segments and the application already persisted them in transcript JSONB. Added relational `transcript_segments` and `insight_evidence_segments` as the durable queryable provenance layer without duplicating the full transcript.
+- New extraction prompts now provide stable integer segment IDs. Application and database validation reject missing/unknown segment references, derive the click timestamp from the first cited stored segment, and persist all cited segment links transactionally.
+- Bumped future extraction identity to `fpl-insights-v2` / `fpl-insights-prompt-v2`; existing episodes are not automatically re-extracted or backfilled.
+- Deployed additive migration `20260809070000_episode_insight_provenance.sql` to the linked Supabase project.
+- Verified 120 TypeScript tests, 131 pgTAP database assertions, ESLint, TypeScript, a clean migration reset, and the Next.js 16.3 production build. Opening episode/entity pages performs no OpenAI call.
+
+- Added a secondary **Specific YouTube videos** workflow that accepts 1–20 URLs, ignores blank lines, validates supported YouTube URL forms, canonicalizes video IDs, and rejects oversized batches without silently truncating them.
+- Added one durable `SPECIFIC_URL_BATCH` processing run plus per-input `processing_run_url_items`, preserving normalized identity, classification, progress, episode linkage, errors, and terminal results across refreshes.
+- Deduplicated alternate watch, short, live, embed, mobile, and `youtu.be` forms by canonical YouTube video ID before transcript or OpenAI work begins.
+- Reused the existing episode orchestration, transcript acquisition, structured extraction, split detection, cancellation, retry, and final run-state logic rather than creating a second processing pipeline.
+- Added server-side YouTube video metadata resolution and canonical creator upsert by channel ID. Newly encountered creators are enabled but not automatically selected for future creator-discovery runs.
+- Made fully processed videos attach to the new run as `ALREADY_PROCESSED` without refetching metadata/transcripts or invoking OpenAI; partially processed videos resume through the existing retryable state machine.
+- Added live and durable dashboard reporting for submitted, eligible, duplicate, invalid, already processed, completed, failed, and cancelled URLs, with source episode links and per-item error messages.
+- Deployed additive migration `20260809060000_specific_url_batches.sql` to the linked Supabase project.
+- Verified a clean migration reset, 125 pgTAP database assertions, 114 TypeScript tests, ESLint, TypeScript, and the Next.js 16.3 production build. Real paid-provider batch execution was intentionally not initiated without user-selected video URLs.
+
+- Added a deterministic derived creator-opinion layer keyed by stable `sourceId`; repeated insights and episodes retain full provenance but count as one independent creator stance for a specific subject, category, and time horizon.
+- Preserved each creator's dated insight and episode chronology. Conflicting positive and negative recommendations within a selected period resolve to `MIXED` rather than counting the creator on both sides.
+- Supplied creator-level opinion groups to synthesis and split detection alongside the untouched atomic evidence, preventing flat insight volume from masquerading as creator breadth.
+- Enforced distinct-creator report counts after model output, deterministically derives sentiment from one stance per creator, and recalculates older stored reports on read without making an OpenAI call.
+- Hardened split validation so a creator cannot support competing positions through different insights. Their evidence moves to a chronological MIXED position only when independently supported competing positions still remain; otherwise the split candidate is discarded.
+- Added distinct creator names/counts to report and split displays while preserving every supporting episode/insight link.
+- Added separate report attention metrics for insight count, episode count, and distinct creator breadth; none is substituted for another.
+- Bumped protected prompt identities to `fpl-editorial-report-v4`, `fpl-splits-prompt-v3`, and detection version `fpl-splits-v3`.
+- Added all seven requested aggregation regressions and verified 104 TypeScript tests, 111 pgTAP assertions, ESLint, TypeScript, and the Next.js 16.3 production build.
 
 - Added independent, database-backed extraction and synthesis custom instructions with a compact dashboard editor, Save, and Reset to default controls.
 - Kept base system prompts, Structured Output schemas, taxonomy, grounding, provenance, evidence, and persistence validation application-controlled; custom text is delimited, lower-authority guidance and is never evidence.
@@ -245,6 +299,20 @@ Configurable protected AI instructions for extraction and synthesis: complete an
 
 ## Known limitations
 
+- Player-to-team membership is not represented in the current stored entity model. Team pages therefore show only insights explicitly linked to that team and do not infer or mix in every player insight; a “Players from this team” section remains deferred until trustworthy membership data exists.
+- Search currently evaluates the 138 canonical entity/alias records server-side and returns at most 20 matches. This is appropriate for the personal-scale corpus; a dedicated indexed search RPC can replace it if the entity library grows materially.
+- Potential normalization collisions remain for surname-only or ambiguous entities, including `Anderson` / `Elliot Anderson`, `Pedro` / `João Pedro`, `Ballard` / `Dan Ballard`, and ambiguous `Kinsky` records. They were not merged automatically because provenance-safe identity is uncertain.
+
+- Existing historical insights are not automatically linked to transcript segments. A previously stored `timestamp_seconds` is still displayed when present; absent timestamps remain explicitly unavailable until the user chooses a future backfill/re-extraction milestone.
+- Date-range preservation uses the current `from`/`to` URL parameters. The episode itself remains visible even when its publication date falls outside that retained explorer range because the episode page is addressed directly by ID.
+
+- Specific-video entry supports YouTube only and resolves public page metadata without a YouTube API key. Removed, private, members-only, age-gated, or region-blocked videos can fail before an episode record can be created.
+- Batch result links open the original YouTube episode because the MVP does not yet have a dedicated internal episode-detail page.
+- Real transcript/OpenAI validation remains an explicit user-triggered paid operation; automated tests use deterministic providers and do not spend provider credits.
+
+- Creator stance derives from the existing recommendation taxonomy. Explicit chronological changes are preserved and displayed as evidence, but the default selected-period stance remains MIXED; a context-specific “latest stance wins” mode is intentionally not inferred automatically.
+- Creator aggregation is entity/category/time-horizon based and conservative. Insights without entity relationships fall back to their primary category rather than using fuzzy subject matching.
+
 - Custom extraction instructions intentionally affect only future extractions. Historical re-extraction is not part of this milestone.
 - Custom synthesis instructions intentionally do not regenerate existing reports; regeneration remains an explicit paid action.
 
@@ -292,6 +360,14 @@ Configurable protected AI instructions for extraction and synthesis: complete an
 
 ## Database migrations applied
 
+- The player/team explorer requires no new migration. It reuses `entities`, `aliases`, `external_fpl_id`, `insight_entities`, episode/source provenance, split relationships, and existing indexes.
+
+- Local and linked Supabase: `20260809070000_episode_insight_provenance.sql` applied successfully. It normalizes existing/new timestamped transcript segments, adds restrictive insight evidence links, and transactionally validates future segment citations.
+
+- Local and linked Supabase: `20260809060000_specific_url_batches.sql` applied successfully. It adds run-type/count audit columns and durable per-URL batch records with restrictive historical foreign keys and service-role-only access.
+
+- Creator-level opinion aggregation requires no database migration; stable source identity and all supporting episode/insight evidence already exist, while report metrics remain derived in validated `summary_data`.
+
 - Milestone 12 requires no database migration; existing transcript columns already store normalized content, provider provenance, timestamps, duration, and content hashes.
 
 - Local database: `20260808120000_initial_fpl_schema.sql` applied successfully from a clean reset.
@@ -320,4 +396,4 @@ Configurable protected AI instructions for extraction and synthesis: complete an
 
 ## Next intended milestone
 
-Verify the instruction editor with preferred real wording, then explicitly regenerate one synthesis when ready to spend the API call. Historical extraction regeneration remains deferred.
+Improve entity normalization only where manually confirmed collisions materially affect browsing; live FPL team membership and historical timestamp backfill remain deferred unless explicitly requested.

@@ -14,6 +14,7 @@ import type {
 import type { NormalizedTranscriptResult } from "@/lib/transcripts/provider";
 import type { ExtractionResult } from "@/lib/insights/extractor";
 import type { ProcessingRunOptions } from "./options";
+import type { NormalizedUrlItem } from "./youtube-url-batch";
 
 export type StoredTranscript = {
   id: string;
@@ -47,10 +48,18 @@ export interface ProcessingRepository {
     episode: DiscoveredEpisode,
   ): Promise<{ episode: StoredEpisode; created: boolean }>;
   getEpisodeAttemptHistory(episodeId: string): Promise<EpisodeAttemptHistory>;
+  hasPersistedExtraction(episodeId: string): Promise<boolean>;
   getTranscript(episodeId: string): Promise<StoredTranscript | null>;
   saveTranscript(episodeId: string, transcript: NormalizedTranscriptResult, contentHash: string): Promise<StoredTranscript>;
   persistExtraction(episodeId: string, extraction: ExtractionResult): Promise<number>;
   createRunEpisode(runId: string, episodeId: string, retryCount: number): Promise<void>;
+  createCompletedRunEpisode?(runId: string, episodeId: string): Promise<void>;
+  createSpecificUrlBatchRun?(items: NormalizedUrlItem[]): Promise<string>;
+  findEpisodeByExternalId?(externalEpisodeId: string): Promise<StoredEpisode | null>;
+  isEpisodeFullyProcessed?(episodeId: string): Promise<boolean>;
+  linkRunSource?(runId: string, sourceId: string): Promise<void>;
+  updateUrlBatchItem?(runId: string, videoId: string, values: { status: string; episodeId?: string; errorMessage?: string | null }): Promise<void>;
+  updateUrlBatchAlreadyProcessedCount?(runId: string, count: number): Promise<void>;
   transitionRunEpisode(runId: string, episodeId: string, transition: EpisodeTransition): Promise<void>;
   updateRunProgress(runId: string, totals: RunTotals): Promise<void>;
   updateCheckpoint(sourceId: string, checkpoint: SourceCheckpoint): Promise<void>;

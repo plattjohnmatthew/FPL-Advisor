@@ -3,6 +3,34 @@ import type { RunSummaryRepository } from "./repository";
 import type { RunSummary, RunSummaryContext } from "./schema";
 import type { SynthesisScope } from "./schema";
 import { REPORT_SECTION_KEYS } from "./schema";
+import { aggregateSentiment, calculateSubjectAttention } from "@/lib/opinions/aggregation";
+
+export function applyCreatorAggregation(summary: RunSummary, insights: RunSummaryContext["insights"]) {
+  const insightById = new Map(insights.map((item) => [item.id, item]));
+  for (const key of REPORT_SECTION_KEYS) {
+    for (const item of summary.sections[key]) {
+      for (const insightId of item.supportingInsightIds) if (!insightById.has(insightId)) throw new Error(`Run summary referenced unknown insight ID: ${insightId}`);
+      const supportingInsights = item.supportingInsightIds.map((id) => insightById.get(id)!);
+      item.sourceCount = new Set(supportingInsights.map((insight) => insight.sourceId)).size;
+      item.supportingCreatorNames = [...new Set(supportingInsights.map((insight) => insight.sourceName))].sort();
+      item.sentiment = aggregateSentiment(supportingInsights);
+      item.attention = calculateSubjectAttention(item.subject, insights, supportingInsights);
+      item.interpretation = normalizeInterpretation(item.interpretation, item.sourceCount);
+    }
+  }
+  return summary;
+}
+
+function normalizeInterpretation(
+  interpretation: RunSummary["sections"]["playersToBuy"][number]["interpretation"],
+  distinctCreatorCount: number,
+) {
+  if (distinctCreatorCount === 1) return "SINGLE_SOURCE" as const;
+  if (interpretation === "CONSENSUS") return "CONSENSUS" as const;
+  if (interpretation === "SPLIT" || interpretation === "DISAGREEMENT") return "SPLIT" as const;
+  if (interpretation === "MIXED") return "MIXED" as const;
+  return "MULTI_SOURCE_SUPPORT" as const;
+}
 
 export class RunSummarySynthesisService {
   constructor(private readonly repository: RunSummaryRepository, private readonly generator: RunSummaryGenerator) {}
@@ -37,14 +65,7 @@ export class RunSummarySynthesisService {
       if (!allowedSplits.has(splitId)) throw new Error(`Run summary referenced unknown split-decision ID: ${splitId}`);
     }
     this.validateIds(generation.summary.overviewSupportingInsightIds, insightById);
-    for (const key of REPORT_SECTION_KEYS) {
-      for (const item of generation.summary.sections[key]) {
-        this.validateIds(item.supportingInsightIds, insightById);
-        const sourceCount = new Set(item.supportingInsightIds.map((id) => insightById.get(id)!.sourceId)).size;
-        item.sourceCount = sourceCount;
-        item.interpretation = this.normalizeInterpretation(item.interpretation, sourceCount);
-      }
-    }
+    applyCreatorAggregation(generation.summary, context.insights);
       const synthesisId = await this.repository.persist(scope, context, generation);
       await this.repository.finishAttempt(attemptId, synthesisId);
       return { synthesisId, includedEpisodeCount: context.includedEpisodeIds.length, excludedEpisodeCount: context.excludedEpisodeCount };
@@ -53,17 +74,6 @@ export class RunSummarySynthesisService {
       await this.repository.failAttempt(attemptId, message);
       throw error;
     }
-  }
-
-  private normalizeInterpretation(
-    interpretation: RunSummary["sections"]["playersToBuy"][number]["interpretation"],
-    distinctCreatorCount: number,
-  ) {
-    if (distinctCreatorCount === 1) return "SINGLE_SOURCE" as const;
-    if (interpretation === "CONSENSUS") return "CONSENSUS" as const;
-    if (interpretation === "SPLIT" || interpretation === "DISAGREEMENT") return "SPLIT" as const;
-    if (interpretation === "MIXED") return "MIXED" as const;
-    return "MULTI_SOURCE_SUPPORT" as const;
   }
 
   private validateIds(insightIds: string[], insightById: Map<string, RunSummaryContext["insights"][number]>) {

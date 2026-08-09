@@ -90,6 +90,7 @@ class InMemoryProcessingRepository implements ProcessingRepository {
         : Math.max(...history.map((attempt) => attempt.retryCount)) + 1,
     };
   }
+  async hasPersistedExtraction(episodeId: string) { return this.extractions.has(episodeId); }
   async getTranscript(episodeId: string) {
     return this.transcripts.get(episodeId) ?? null;
   }

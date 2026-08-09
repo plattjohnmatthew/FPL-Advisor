@@ -22,6 +22,7 @@ export const ExtractedInsightSchema = z.object({
   entities: z.array(InsightEntitySchema),
   tags: z.array(z.string().trim().min(1)),
   evidenceText: z.string().trim().min(1),
+  evidenceSegmentIds: z.array(z.number().int().nonnegative()).default([]),
   timestampSeconds: z.number().int().nonnegative().nullable(),
   validFromGameweek: z.number().int().min(1).max(38).nullable(),
   validToGameweek: z.number().int().min(1).max(38).nullable(),
@@ -31,7 +32,7 @@ export const ExtractedInsightSchema = z.object({
 );
 
 export const InsightExtractionSchema = z.object({ insights: z.array(ExtractedInsightSchema) });
-export type InsightExtraction = z.infer<typeof InsightExtractionSchema>;
+export type InsightExtraction = z.input<typeof InsightExtractionSchema>;
 
 export function normalizeInsightEntities(extraction: InsightExtraction): InsightExtraction {
   return {
@@ -45,7 +46,7 @@ export function normalizeInsightEntities(extraction: InsightExtraction): Insight
           aliases: [...new Set([...existing.aliases, ...entity.aliases].map((alias) => alias.trim()).filter(Boolean))],
         } : { ...entity, aliases: [...new Set(entity.aliases)] });
       }
-      return { ...insight, tags: [...new Set(insight.tags)], entities: [...entities.values()] };
+      return { ...insight, evidenceSegmentIds: insight.evidenceSegmentIds ?? [], tags: [...new Set(insight.tags)], entities: [...entities.values()] };
     }),
   };
 }
@@ -70,4 +71,23 @@ export function validateExtractionForPersistence(episodeId: string, value: unkno
     throw new Error(`Extraction validation failed: episode=${episodeId}${insightIndex === null ? "" : ` insight=${insightIndex}`} field=${field} expected=${issue.message} received=${receivedType(received)}`);
   }
   return normalizeInsightEntities(result.data);
+}
+
+export function validateInsightSegmentReferences(episodeId: string, extraction: InsightExtraction, segments: unknown[]) {
+  return {
+    ...extraction,
+    insights: extraction.insights.map((insight, insightIndex) => {
+      const uniqueIds = [...new Set(insight.evidenceSegmentIds ?? [])];
+      if (segments.length === 0) {
+        if (uniqueIds.length > 0) throw new Error(`Extraction validation failed: episode=${episodeId} insight=${insightIndex} field=evidenceSegmentIds expected=empty without timestamped transcript received=${uniqueIds.join(",")}`);
+        return { ...insight, evidenceSegmentIds: [], timestampSeconds: null };
+      }
+      if (uniqueIds.length === 0) throw new Error(`Extraction validation failed: episode=${episodeId} insight=${insightIndex} field=evidenceSegmentIds expected=at least one stored segment received=empty`);
+      const invalidId = uniqueIds.find((id) => id >= segments.length);
+      if (invalidId !== undefined) throw new Error(`Extraction validation failed: episode=${episodeId} insight=${insightIndex} field=evidenceSegmentIds invalid stored segment ID=${invalidId}`);
+      const firstSegment = segments[uniqueIds[0]] as { startSeconds?: unknown };
+      if (!Number.isFinite(firstSegment.startSeconds)) throw new Error(`Extraction validation failed: episode=${episodeId} insight=${insightIndex} field=evidenceSegmentIds segment has no valid timestamp`);
+      return { ...insight, evidenceSegmentIds: uniqueIds, timestampSeconds: Math.floor(Number(firstSegment.startSeconds)) };
+    }),
+  };
 }

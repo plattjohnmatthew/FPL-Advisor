@@ -8,6 +8,7 @@ import { SPLIT_DETECTION_PROMPT, SPLIT_DETECTION_VERSION, SPLIT_PROMPT_VERSION }
 import { SplitDetectionOutputSchema, type SplitCandidateInsight } from "./schema";
 import { getOpenAIModel } from "@/lib/openai/model-policy";
 import { trackOpenAICall } from "@/lib/openai/usage";
+import { buildCreatorOpinionGroups } from "@/lib/opinions/aggregation";
 
 export class OpenAISplitDecisionDetector implements SplitDecisionDetector {
   async detect(insights: SplitCandidateInsight[], context?: { runId: string | null; requestId?: string }) {
@@ -17,7 +18,7 @@ export class OpenAISplitDecisionDetector implements SplitDecisionDetector {
       model,
       input: [
         { role: "system", content: SPLIT_DETECTION_PROMPT },
-        { role: "user", content: `Candidate creator insights:\n${JSON.stringify(insights)}` },
+        { role: "user", content: `Candidate insights and application-derived creator-level opinion groups:\n${JSON.stringify({ insights, creatorOpinionGroups: buildCreatorOpinionGroups(insights) })}` },
       ],
       text: { format: zodTextFormat(SplitDetectionOutputSchema, "fpl_split_decisions") },
     }));

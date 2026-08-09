@@ -17,6 +17,7 @@ import type { ProcessingRunOptions } from "./options";
 import { isPublishedInDiscoveryWindow, LEGACY_UNBOUNDED_RUN_OPTIONS } from "./options";
 
 type QueueEntry = { episode: StoredEpisode; retryCount: number };
+export type SpecificUrlBatchEntry = QueueEntry & { videoId: string };
 export interface RunSplitDecisionDetector {
   detectForRun(runId: string): Promise<number | { persistedCount: number; warnings: string[] }>;
 }
@@ -94,6 +95,61 @@ export class ProcessingRunOrchestrator {
     const status: "COMPLETED" | "PARTIAL" | "FAILED" | "CANCELLED" = cancelled
       ? "CANCELLED"
       : errors.length === 0 ? "COMPLETED" : totals.episodesProcessed > 0 ? "PARTIAL" : "FAILED";
+    const result: ProcessingRunResult = { runId, status, ...totals, errors };
+    await this.repository.finishRun(result);
+    return result;
+  }
+
+  async runSpecificUrlBatch(
+    runId: string,
+    entries: SpecificUrlBatchEntry[],
+    initial: { sourcesChecked: number; episodesDiscovered: number; alreadyProcessed: number; errors: string[] },
+  ): Promise<ProcessingRunResult> {
+    const totals = {
+      sourcesChecked: initial.sourcesChecked, episodesDiscovered: initial.episodesDiscovered,
+      episodesProcessed: 0, episodesFailed: initial.errors.length, episodesSelected: entries.length, episodesDeferred: 0,
+    };
+    const errors = [...initial.errors];
+    await this.repository.updateRunProgress(runId, totals);
+    for (let index = 0; index < entries.length; index += 1) {
+      const entry = entries[index];
+      if (await this.repository.isCancellationRequested(runId)) {
+        for (const remaining of entries.slice(index)) {
+          await this.cancelUnstartedEpisode(runId, remaining);
+          await this.repository.updateUrlBatchItem!(runId, remaining.videoId, { status: "CANCELLED", episodeId: remaining.episode.id });
+        }
+        break;
+      }
+      await this.repository.updateUrlBatchItem!(runId, entry.videoId, { status: "PROCESSING", episodeId: entry.episode.id });
+      const outcome = await this.processEpisode(runId, entry, errors);
+      if (outcome === "COMPLETED") totals.episodesProcessed += 1;
+      else if (outcome === "FAILED") totals.episodesFailed += 1;
+      await this.repository.updateUrlBatchItem!(runId, entry.videoId, {
+        status: outcome, episodeId: entry.episode.id,
+        errorMessage: outcome === "FAILED" ? errors.at(-1) ?? "Video processing failed." : null,
+      });
+      await this.repository.updateRunProgress(runId, totals);
+      if (outcome === "CANCELLED") {
+        for (const remaining of entries.slice(index + 1)) {
+          await this.cancelUnstartedEpisode(runId, remaining);
+          await this.repository.updateUrlBatchItem!(runId, remaining.videoId, { status: "CANCELLED", episodeId: remaining.episode.id });
+        }
+        break;
+      }
+    }
+    if (!await this.repository.isCancellationRequested(runId) && totals.episodesProcessed > 0) {
+      try {
+        const splitResult = await this.splitDecisionDetector.detectForRun(runId);
+        if (typeof splitResult !== "number") for (const warning of splitResult.warnings) await this.recordFailure(runId, null, "SPLIT_DECISION_GENERATION", new Error(warning), warning);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown split-decision detection error";
+        errors.push(`Split-decision detection: ${message}`);
+        await this.recordFailure(runId, null, "SPLIT_DECISION_GENERATION", error, message);
+      }
+    }
+    const cancelled = await this.repository.isCancellationRequested(runId);
+    const completedWork = totals.episodesProcessed + initial.alreadyProcessed;
+    const status = cancelled ? "CANCELLED" : errors.length === 0 ? "COMPLETED" : completedWork > 0 ? "PARTIAL" : "FAILED";
     const result: ProcessingRunResult = { runId, status, ...totals, errors };
     await this.repository.finishRun(result);
     return result;
@@ -241,9 +297,11 @@ export class ProcessingRunOrchestrator {
         extractionStatus: "EXTRACTING",
       });
       currentStatus = "EXTRACTING";
-      const extraction = await this.insightExtractor.extract(episode, storedTranscript);
-      currentStage = "EXTRACTION_PERSISTENCE";
-      await this.repository.persistExtraction(episode.id, extraction);
+      if (!await this.repository.hasPersistedExtraction(episode.id)) {
+        const extraction = await this.insightExtractor.extract(episode, storedTranscript);
+        currentStage = "EXTRACTION_PERSISTENCE";
+        await this.repository.persistExtraction(episode.id, extraction);
+      }
       await this.repository.transitionRunEpisode(runId, episode.id, {
         from: "EXTRACTING",
         to: "COMPLETED",

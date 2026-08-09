@@ -239,9 +239,10 @@ export class SupabaseRunSummaryRepository implements RunSummaryRepository {
       unresolvedQuestion: decision.unresolved_question as string | null, implication: decision.implication as string | null,
       positions: positions.filter((position) => position.split_decision_id === decision.id).map((position) => {
         const supportingInsightIds = links.filter((link) => link.split_position_id === position.id).map((link) => link.insight_id as string);
+        const creators = [...new Set(supportingInsightIds.map((id) => evidenceById.get(id)?.sourceName).filter((name): name is string => Boolean(name)))];
         return {
           position: position.position as string, reasoning: position.reasoning as string, supportingInsightIds,
-          creators: [...new Set(supportingInsightIds.map((id) => evidenceById.get(id)?.sourceName).filter((name): name is string => Boolean(name)))],
+          creators, creatorCount: creators.length,
         };
       }),
     }));

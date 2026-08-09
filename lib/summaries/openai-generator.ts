@@ -10,6 +10,7 @@ import { getOpenAIModel } from "@/lib/openai/model-policy";
 import { normalizeResponseUsage, trackOpenAICall } from "@/lib/openai/usage";
 import { composePromptVersion, customInstructionsMessage } from "@/lib/prompt-settings/config";
 import { SupabasePromptSettingsRepository } from "@/lib/prompt-settings/repository";
+import { buildCreatorOpinionGroups } from "@/lib/opinions/aggregation";
 
 export class OpenAIRunSummaryGenerator implements RunSummaryGenerator {
   async generate(context: RunSummaryContext, callContext?: { requestId: string }) {
@@ -27,7 +28,7 @@ export class OpenAIRunSummaryGenerator implements RunSummaryGenerator {
       input: [
         { role: "system", content: RUN_SUMMARY_PROMPT },
         { role: "user", content: customInstructionsMessage(customSetting.value) },
-        { role: "user", content: `Structured run context:\n${JSON.stringify(context)}` },
+        { role: "user", content: `Structured run context, including application-derived creator-level opinion groups:\n${JSON.stringify({ ...context, creatorOpinionGroups: buildCreatorOpinionGroups(context.insights) })}` },
       ],
       text: { format: zodTextFormat(outputSchema, "fpl_run_summary") },
     }));
