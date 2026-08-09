@@ -1,0 +1,432 @@
+import "server-only";
+
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { RunAlreadyInProgressError } from "./repository";
+import type { EpisodeTransition, ProcessingRepository } from "./repository";
+import type {
+  DiscoveredEpisode,
+  EpisodeAttemptHistory,
+  ProcessingRunResult,
+  ProcessingFailure,
+  ProcessingSource,
+  RunTotals,
+  SourceCheckpoint,
+  StoredEpisode,
+} from "./types";
+import type { NormalizedTranscriptResult } from "@/lib/transcripts/provider";
+import { batchValues } from "@/lib/supabase/batch";
+import { validateExtractionForPersistence } from "@/lib/insights/schema";
+import type { ProcessingRunOptions } from "./options";
+
+type EpisodeRow = {
+  id: string;
+  source_id: string;
+  external_episode_id: string;
+  title: string;
+  source_url: string;
+  published_at: string;
+  duration_seconds: number | null;
+  gameweek: number | null;
+};
+
+function mapEpisode(row: EpisodeRow): StoredEpisode {
+  return {
+    id: row.id,
+    sourceId: row.source_id,
+    externalEpisodeId: row.external_episode_id,
+    title: row.title,
+    sourceUrl: row.source_url,
+    publishedAt: row.published_at,
+    durationSeconds: row.duration_seconds,
+    gameweek: row.gameweek,
+  };
+}
+
+export class SupabaseProcessingRepository implements ProcessingRepository {
+  async requestCancellation(runId: string) {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase.from("processing_runs")
+      .update({ status: "CANCELLING", cancellation_requested_at: new Date().toISOString() })
+      .eq("id", runId).eq("status", "RUNNING").select("id").maybeSingle();
+    if (error) throw new Error(`Unable to request run cancellation: ${error.message}`);
+    return Boolean(data);
+  }
+
+  async isCancellationRequested(runId: string) {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase.from("processing_runs").select("status").eq("id", runId).single();
+    if (error) throw new Error(`Unable to check run cancellation: ${error.message}`);
+    return data.status === "CANCELLING" || data.status === "CANCELLED";
+  }
+
+  async recordFailure(failure: ProcessingFailure) {
+    const supabase = createSupabaseServerClient();
+    const { error } = await supabase.from("processing_failures").insert({
+      run_id: failure.runId,
+      episode_id: failure.episodeId,
+      stage: failure.stage,
+      error_message: failure.errorMessage,
+      retryable: failure.retryable,
+      occurred_at: failure.occurredAt,
+    });
+    if (error) throw new Error(`Unable to persist processing failure: ${error.message}`);
+  }
+
+  async createRun(options: ProcessingRunOptions, selectedSourceIds?: string[]) {
+    const supabase = createSupabaseServerClient();
+    if (selectedSourceIds) {
+      const { data, error } = await supabase.rpc("create_processing_run_with_sources", {
+        target_source_ids: selectedSourceIds,
+        target_discovery_start: options.discoveryStart,
+        target_discovery_end: options.discoveryEnd,
+        target_youtube_max_videos_per_creator: options.constraints.youtube.maxVideosPerCreator,
+      });
+      if (error?.code === "23505") throw new RunAlreadyInProgressError();
+      if (error) throw new Error(`Unable to create processing run: ${error.message}`);
+      return data as string;
+    }
+    const { data, error } = await supabase
+      .from("processing_runs")
+      .insert({
+        status: "RUNNING",
+        discovery_start: options.discoveryStart,
+        discovery_end: options.discoveryEnd,
+        youtube_max_videos_per_creator: options.constraints.youtube.maxVideosPerCreator,
+      })
+      .select("id")
+      .single();
+
+    if (error?.code === "23505") {
+      throw new RunAlreadyInProgressError();
+    }
+    if (error) {
+      throw new Error(`Unable to create processing run: ${error.message}`);
+    }
+    return data.id as string;
+  }
+
+  async listRunSources(runId: string): Promise<ProcessingSource[]> {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase.from("processing_run_sources")
+      .select("sources!inner(id, name, platform, channel_url, external_channel_id, enabled)")
+      .eq("processing_run_id", runId).eq("sources.enabled", true).order("created_at");
+    if (error) throw new Error(`Unable to load run source snapshot: ${error.message}`);
+    return data.map((row) => {
+      const source = row.sources as unknown as Record<string, unknown>;
+      return { id: source.id as string, name: source.name as string, platform: source.platform as ProcessingSource["platform"], channelUrl: source.channel_url as string, externalChannelId: source.external_channel_id as string };
+    });
+  }
+
+  async listEnabledSources(): Promise<ProcessingSource[]> {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("sources")
+      .select("id, name, platform, channel_url, external_channel_id")
+      .eq("enabled", true)
+      .order("created_at");
+
+    if (error) {
+      throw new Error(`Unable to load enabled sources: ${error.message}`);
+    }
+
+    return data.map((source) => ({
+      id: source.id as string,
+      name: source.name as string,
+      platform: source.platform as ProcessingSource["platform"],
+      channelUrl: source.channel_url as string,
+      externalChannelId: source.external_channel_id as string,
+    }));
+  }
+
+  async getCheckpoint(sourceId: string): Promise<SourceCheckpoint | null> {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("source_checkpoints")
+      .select("source_id, last_successful_published_at, last_successful_episode_external_id, last_checked_at")
+      .eq("source_id", sourceId)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Unable to load source checkpoint: ${error.message}`);
+    }
+    if (!data) {
+      return null;
+    }
+
+    return {
+      sourceId: data.source_id as string,
+      lastSuccessfulPublishedAt: data.last_successful_published_at as string | null,
+      lastSuccessfulEpisodeExternalId: data.last_successful_episode_external_id as string | null,
+      lastCheckedAt: data.last_checked_at as string | null,
+    };
+  }
+
+  async listRetryableEpisodes(sourceId: string) {
+    const supabase = createSupabaseServerClient();
+    const { data: episodes, error: episodeError } = await supabase
+      .from("episodes")
+      .select("id, source_id, external_episode_id, title, source_url, published_at, duration_seconds, gameweek")
+      .eq("source_id", sourceId);
+
+    if (episodeError) {
+      throw new Error(`Unable to load retry candidates: ${episodeError.message}`);
+    }
+    if (episodes.length === 0) {
+      return [];
+    }
+
+    const rows = episodes as EpisodeRow[];
+    const attempts: Array<{ episode_id: string; status: string; retry_count: number }> = [];
+    for (const batch of batchValues(rows.map((episode) => episode.id))) {
+      const { data, error } = await supabase.from("run_episodes").select("episode_id, status, retry_count").in("episode_id", batch);
+      if (error) throw new Error(`Unable to load previous episode attempts: ${error.message}`);
+      attempts.push(...data as typeof attempts);
+    }
+
+    return rows.flatMap((episode) => {
+      const history = attempts.filter((attempt) => attempt.episode_id === episode.id);
+      if (history.length === 0 || history.some((attempt) => attempt.status === "COMPLETED")) {
+        return [];
+      }
+
+      const retryCount = Math.max(...history.map((attempt) => Number(attempt.retry_count))) + 1;
+      return [{ ...mapEpisode(episode), retryCount }];
+    });
+  }
+
+  async upsertEpisode(sourceId: string, episode: DiscoveredEpisode) {
+    const supabase = createSupabaseServerClient();
+    const { data: existing, error: existingError } = await supabase
+      .from("episodes")
+      .select("id")
+      .eq("source_id", sourceId)
+      .eq("external_episode_id", episode.externalEpisodeId)
+      .maybeSingle();
+
+    if (existingError) {
+      throw new Error(`Unable to check episode identity: ${existingError.message}`);
+    }
+
+    const { data, error } = await supabase
+      .from("episodes")
+      .upsert(
+        {
+          source_id: sourceId,
+          external_episode_id: episode.externalEpisodeId,
+          title: episode.title,
+          source_url: episode.sourceUrl,
+          published_at: episode.publishedAt,
+          duration_seconds: episode.durationSeconds,
+          gameweek: episode.gameweek,
+        },
+        { onConflict: "source_id,external_episode_id" },
+      )
+      .select("id, source_id, external_episode_id, title, source_url, published_at, duration_seconds, gameweek")
+      .single();
+
+    if (error) {
+      throw new Error(`Unable to upsert episode: ${error.message}`);
+    }
+    return { episode: mapEpisode(data as EpisodeRow), created: existing === null };
+  }
+
+  async getEpisodeAttemptHistory(episodeId: string): Promise<EpisodeAttemptHistory> {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("run_episodes")
+      .select("status, retry_count")
+      .eq("episode_id", episodeId);
+
+    if (error) {
+      throw new Error(`Unable to load episode processing history: ${error.message}`);
+    }
+
+    return {
+      completed: data.some((attempt) => attempt.status === "COMPLETED"),
+      nextRetryCount: data.length === 0
+        ? 0
+        : Math.max(...data.map((attempt) => Number(attempt.retry_count))) + 1,
+    };
+  }
+
+  async getTranscript(episodeId: string) {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("transcripts")
+      .select("id, episode_id, content_hash, raw_text, language, segments")
+      .eq("episode_id", episodeId)
+      .order("fetched_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw new Error(`Unable to load transcript: ${error.message}`);
+    return data ? {
+      id: data.id as string,
+      episodeId: data.episode_id as string,
+      contentHash: data.content_hash as string,
+      rawText: data.raw_text as string,
+      language: data.language as string | null,
+      segments: data.segments as unknown[] | null,
+    } : null;
+  }
+
+  async saveTranscript(episodeId: string, transcript: NormalizedTranscriptResult, contentHash: string) {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("transcripts")
+      .upsert({
+        episode_id: episodeId,
+        provider: transcript.providerName,
+        raw_text: transcript.rawText,
+        language: transcript.language ?? "und",
+        duration_seconds: transcript.durationSeconds,
+        segments: transcript.segments ?? null,
+        content_hash: contentHash,
+      }, { onConflict: "episode_id,content_hash", ignoreDuplicates: true })
+      .select("id, episode_id, content_hash, raw_text, language, segments")
+      .maybeSingle();
+
+    if (error) throw new Error(`Unable to store transcript: ${error.message}`);
+
+    let stored = data;
+    if (!stored) {
+      const { data: existing, error: existingError } = await supabase
+        .from("transcripts")
+        .select("id, episode_id, content_hash, raw_text, language, segments")
+        .eq("episode_id", episodeId)
+        .eq("content_hash", contentHash)
+        .single();
+      if (existingError) throw new Error(`Unable to load stored transcript: ${existingError.message}`);
+      stored = existing;
+    }
+
+    if (transcript.durationSeconds != null) {
+      const { error: durationError } = await supabase
+        .from("episodes")
+        .update({ duration_seconds: transcript.durationSeconds })
+        .eq("id", episodeId);
+      if (durationError) throw new Error(`Unable to update episode duration: ${durationError.message}`);
+    }
+
+    return {
+      id: stored.id as string,
+      episodeId: stored.episode_id as string,
+      contentHash: stored.content_hash as string,
+      rawText: stored.raw_text as string,
+      language: stored.language as string | null,
+      segments: stored.segments as unknown[] | null,
+    };
+  }
+
+  async persistExtraction(episodeId: string, extraction: import("@/lib/insights/extractor").ExtractionResult) {
+    const normalized = validateExtractionForPersistence(episodeId, extraction);
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase.rpc("persist_episode_insight_extraction", {
+      target_episode_id: episodeId,
+      target_extraction_version: extraction.extractionVersion,
+      target_prompt_version: extraction.promptVersion,
+      target_model: extraction.model,
+      target_input_tokens: extraction.tokenUsage?.inputTokens ?? null,
+      target_output_tokens: extraction.tokenUsage?.outputTokens ?? null,
+      target_total_tokens: extraction.tokenUsage?.totalTokens ?? null,
+      target_extracted_at: extraction.extractedAt,
+      extracted_insights: normalized.insights,
+    });
+    if (error) throw new Error(`Unable to persist insight extraction: episode=${episodeId} stage=persistence ${error.message}`);
+    return Number(data);
+  }
+
+  async createRunEpisode(runId: string, episodeId: string, retryCount: number) {
+    const supabase = createSupabaseServerClient();
+    const { error } = await supabase.from("run_episodes").insert({
+      run_id: runId,
+      episode_id: episodeId,
+      status: "DISCOVERED",
+      retry_count: retryCount,
+    });
+
+    if (error) {
+      throw new Error(`Unable to create run episode: ${error.message}`);
+    }
+  }
+
+  async transitionRunEpisode(runId: string, episodeId: string, transition: EpisodeTransition) {
+    const supabase = createSupabaseServerClient();
+    const values: Record<string, string | null> = { status: transition.to };
+    if (transition.startedAt !== undefined) values.started_at = transition.startedAt;
+    if (transition.completedAt !== undefined) values.completed_at = transition.completedAt;
+    if (transition.transcriptStatus !== undefined) values.transcript_status = transition.transcriptStatus;
+    if (transition.extractionStatus !== undefined) values.extraction_status = transition.extractionStatus;
+    if (transition.errorMessage !== undefined) values.error_message = transition.errorMessage;
+
+    const { data, error } = await supabase
+      .from("run_episodes")
+      .update(values)
+      .eq("run_id", runId)
+      .eq("episode_id", episodeId)
+      .eq("status", transition.from)
+      .select("episode_id")
+      .maybeSingle();
+
+    if (error || !data) {
+      throw new Error(`Unable to transition episode from ${transition.from} to ${transition.to}: ${error?.message ?? "state changed concurrently"}`);
+    }
+  }
+
+  async updateRunProgress(runId: string, totals: RunTotals) {
+    const supabase = createSupabaseServerClient();
+    const { error } = await supabase
+      .from("processing_runs")
+      .update({
+        sources_checked: totals.sourcesChecked,
+        episodes_discovered: totals.episodesDiscovered,
+        episodes_processed: totals.episodesProcessed,
+        episodes_failed: totals.episodesFailed,
+        episodes_selected: totals.episodesSelected,
+        episodes_deferred: totals.episodesDeferred,
+      })
+      .eq("id", runId)
+      .in("status", ["RUNNING", "CANCELLING"]);
+
+    if (error) {
+      throw new Error(`Unable to update run progress: ${error.message}`);
+    }
+  }
+
+  async updateCheckpoint(sourceId: string, checkpoint: SourceCheckpoint) {
+    const supabase = createSupabaseServerClient();
+    const { error } = await supabase.from("source_checkpoints").upsert({
+      source_id: sourceId,
+      last_successful_published_at: checkpoint.lastSuccessfulPublishedAt,
+      last_successful_episode_external_id: checkpoint.lastSuccessfulEpisodeExternalId,
+      last_checked_at: checkpoint.lastCheckedAt,
+    });
+
+    if (error) {
+      throw new Error(`Unable to update source checkpoint: ${error.message}`);
+    }
+  }
+
+  async finishRun(result: ProcessingRunResult) {
+    const supabase = createSupabaseServerClient();
+    const { error } = await supabase
+      .from("processing_runs")
+      .update({
+        completed_at: new Date().toISOString(),
+        status: result.status,
+        sources_checked: result.sourcesChecked,
+        episodes_discovered: result.episodesDiscovered,
+        episodes_processed: result.episodesProcessed,
+        episodes_failed: result.episodesFailed,
+        episodes_selected: result.episodesSelected,
+        episodes_deferred: result.episodesDeferred,
+        error_message: result.errors.length > 0 ? result.errors.join("\n") : null,
+      })
+      .eq("id", result.runId)
+      .in("status", ["RUNNING", "CANCELLING"]);
+
+    if (error) {
+      throw new Error(`Unable to finish processing run: ${error.message}`);
+    }
+  }
+}

@@ -1,0 +1,66 @@
+import type {
+  DiscoveredEpisode,
+  EpisodeAttemptHistory,
+  EpisodeProcessingStatus,
+  ExtractionProcessingStatus,
+  ProcessingRunResult,
+  ProcessingFailure,
+  RunTotals,
+  ProcessingSource,
+  SourceCheckpoint,
+  StoredEpisode,
+  TranscriptProcessingStatus,
+} from "./types";
+import type { NormalizedTranscriptResult } from "@/lib/transcripts/provider";
+import type { ExtractionResult } from "@/lib/insights/extractor";
+import type { ProcessingRunOptions } from "./options";
+
+export type StoredTranscript = {
+  id: string;
+  episodeId: string;
+  contentHash: string;
+  rawText: string;
+  language: string | null;
+  segments: unknown[] | null;
+};
+
+export type EpisodeTransition = {
+  from: EpisodeProcessingStatus;
+  to: EpisodeProcessingStatus;
+  startedAt?: string;
+  completedAt?: string;
+  transcriptStatus?: TranscriptProcessingStatus;
+  extractionStatus?: ExtractionProcessingStatus;
+  errorMessage?: string | null;
+};
+
+export interface ProcessingRepository {
+  createRun(options: ProcessingRunOptions, selectedSourceIds?: string[]): Promise<string>;
+  requestCancellation(runId: string): Promise<boolean>;
+  isCancellationRequested(runId: string): Promise<boolean>;
+  listEnabledSources(): Promise<ProcessingSource[]>;
+  listRunSources?(runId: string): Promise<ProcessingSource[]>;
+  getCheckpoint(sourceId: string): Promise<SourceCheckpoint | null>;
+  listRetryableEpisodes(sourceId: string): Promise<Array<StoredEpisode & { retryCount: number }>>;
+  upsertEpisode(
+    sourceId: string,
+    episode: DiscoveredEpisode,
+  ): Promise<{ episode: StoredEpisode; created: boolean }>;
+  getEpisodeAttemptHistory(episodeId: string): Promise<EpisodeAttemptHistory>;
+  getTranscript(episodeId: string): Promise<StoredTranscript | null>;
+  saveTranscript(episodeId: string, transcript: NormalizedTranscriptResult, contentHash: string): Promise<StoredTranscript>;
+  persistExtraction(episodeId: string, extraction: ExtractionResult): Promise<number>;
+  createRunEpisode(runId: string, episodeId: string, retryCount: number): Promise<void>;
+  transitionRunEpisode(runId: string, episodeId: string, transition: EpisodeTransition): Promise<void>;
+  updateRunProgress(runId: string, totals: RunTotals): Promise<void>;
+  updateCheckpoint(sourceId: string, checkpoint: SourceCheckpoint): Promise<void>;
+  finishRun(result: ProcessingRunResult): Promise<void>;
+  recordFailure(failure: ProcessingFailure): Promise<void>;
+}
+
+export class RunAlreadyInProgressError extends Error {
+  constructor() {
+    super("A processing run is already in progress.");
+    this.name = "RunAlreadyInProgressError";
+  }
+}
