@@ -1,8 +1,8 @@
 {
   "appMode": "public_read_only",
   "paidAndWriteSecrets": "blanked before Next environment loading",
-  "snapshotSource": "local files",
-  "snapshotReads": 0,
+  "snapshotSource": "public object storage",
+  "snapshotReads": 24,
   "deniedExternalCalls": 0,
   "results": [
     {
@@ -17,7 +17,7 @@
       "method": "GET",
       "path": "/intelligence",
       "status": 200,
-      "bytes": 99251,
+      "bytes": 98882,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -25,7 +25,7 @@
       "method": "GET",
       "path": "/intelligence/briefings",
       "status": 200,
-      "bytes": 35038,
+      "bytes": 34669,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -41,7 +41,7 @@
       "method": "GET",
       "path": "/fixtures",
       "status": 200,
-      "bytes": 108178,
+      "bytes": 107809,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -57,7 +57,7 @@
       "method": "GET",
       "path": "/sources",
       "status": 200,
-      "bytes": 31398,
+      "bytes": 31072,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -89,7 +89,7 @@
       "method": "GET",
       "path": "/entities/015351f7-8bbe-4839-8480-de85b19bd4ac?range=all",
       "status": 200,
-      "bytes": 33858,
+      "bytes": 33489,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -97,7 +97,7 @@
       "method": "GET",
       "path": "/entities/04bfc52a-9cb6-40d9-bc91-4be484037b87?range=all",
       "status": 200,
-      "bytes": 34146,
+      "bytes": 33777,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -105,7 +105,7 @@
       "method": "GET",
       "path": "/episodes/0ab03c17-15bc-4b5a-a4a1-23a0aa488d42",
       "status": 200,
-      "bytes": 75484,
+      "bytes": 73902,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -113,7 +113,7 @@
       "method": "GET",
       "path": "/intelligence/briefings/13d5d37e-66e7-4c0e-ad99-00d757c5442a",
       "status": 200,
-      "bytes": 212871,
+      "bytes": 212502,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -274,7 +274,7 @@
     },
     {
       "method": "GET",
-      "path": "/data/public-snapshots/f9eef240-91e5-4103-b497-c0828ce3659c.json",
+      "path": "/data/public-snapshots/e6ea63f1-bce0-4f26-8d37-bf42ca2f661e.json",
       "status": 403,
       "bytes": 95,
       "vary": "Accept-Encoding"
