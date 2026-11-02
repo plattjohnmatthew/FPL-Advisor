@@ -57,7 +57,7 @@
       "method": "GET",
       "path": "/sources",
       "status": 200,
-      "bytes": 31072,
+      "bytes": 30890,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
@@ -76,6 +76,110 @@
       "bytes": 179,
       "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=00000000-0000-4000-8000-000000000010",
+      "status": 200,
+      "bytes": 64338,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=00000000-0000-4000-8000-000000000011",
+      "status": 200,
+      "bytes": 68722,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=0b3278f7-3a3b-4f3e-8002-1981815c3595",
+      "status": 200,
+      "bytes": 97596,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=1a3ccdbb-0841-4736-9651-3cbcfd6d212e",
+      "status": 200,
+      "bytes": 53924,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=3b9612e1-bb88-49be-b3a7-2c55be7691ed",
+      "status": 200,
+      "bytes": 36963,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=41fc7a9c-8d48-4ab0-b4b9-027196655696",
+      "status": 200,
+      "bytes": 36034,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=523e342f-b9ff-4061-8128-d7908b7d6064",
+      "status": 200,
+      "bytes": 32000,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=6bb1c422-45df-4e70-8cd1-d764555847df",
+      "status": 200,
+      "bytes": 39874,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=a5acdc43-e9b5-4216-ba53-905f83a8e349",
+      "status": 200,
+      "bytes": 32613,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=b0946dfa-987b-41a8-a64f-e1faa1b512dd",
+      "status": 200,
+      "bytes": 28492,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=e83a32f7-a3d3-4603-aaef-eaac03bb45a0",
+      "status": 200,
+      "bytes": 43605,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=f115a764-d60d-405a-8169-29843ac7731c",
+      "status": 200,
+      "bytes": 28490,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?creator=f180372a-cdaf-4b8e-9a9e-cd108a8f43ca",
+      "status": 200,
+      "bytes": 36638,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
     },
     {
       "method": "HEAD",

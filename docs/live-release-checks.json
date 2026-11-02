@@ -12,15 +12,16 @@
     "discussionsEnabled": false
   },
   "preview": {
-    "state": "blocked",
+    "state": "build succeeded; awaiting shareable link for runtime verification",
     "githubStatusDescription": "Deployment was blocked",
-    "dashboard": "https://vercel.com/team-john1/fpl-advisor/Hi2Pyfma3tH6T1tLFrt439AuD47g",
-    "url": "https://fpl-advisor-b035hm8a4-team-john1.vercel.app",
+    "dashboard": "https://vercel.com/team-john1/fpl-advisor/HGSqAUdQpr3M3jD7Z6SkNUvPCvXC",
+    "url": "https://fpl-advisor-pw424fv4v-team-john1.vercel.app",
     "anonymousRequest": "redirects to Vercel sign-in; no application attestation",
     "authorEmail": "john@john-platt.com",
-    "githubRecognizesAuthor": false,
-    "likelyCause": "Unrecognized commit author; exact Vercel dashboard reason still needs confirmation",
-    "nextAction": "Owner adds and verifies the selected public email on GitHub, then retrigger the preview"
+    "githubRecognizesAuthor": true,
+    "nextAction": "Owner shares this specific preview so live page/API checks can run",
+    "releaseCommit": "99fdc6a",
+    "authorAccount": "plattjohnmatthew"
   },
   "localProductionRuntime": {
     "checksPassed": 54,
@@ -32,7 +33,11 @@
   "domain": {
     "target": "fpl.john-platt.com",
     "currentCname": "john-platt.com",
-    "nameservers": ["ns1.wordpress.com", "ns2.wordpress.com", "ns3.wordpress.com"],
+    "nameservers": [
+      "ns1.wordpress.com",
+      "ns2.wordpress.com",
+      "ns3.wordpress.com"
+    ],
     "https": "certificate hostname mismatch; not ready",
     "nextAction": "Replace only the fpl CNAME with the exact current target supplied by this Vercel project's Domains settings"
   },

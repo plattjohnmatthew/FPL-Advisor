@@ -1,9 +1,9 @@
 {
   "result": "PASS",
   "scope": "All locally fetched refs, commit/tag messages and Git blobs; tracked and non-ignored working files. Ignored private files are comparison inputs only.",
-  "commits": 4,
-  "historyBlobs": 294,
-  "workingFiles": 366,
+  "commits": 6,
+  "historyBlobs": 528,
+  "workingFiles": 369,
   "knownLocalSecretsCompared": 4,
   "findings": [],
   "privatePaths": [],

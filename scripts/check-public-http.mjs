@@ -30,6 +30,7 @@ const port = server.address().port;
 const results = []; const surfaces=[];
 const pointer=JSON.parse(await readFile("data/public-snapshots/current.json","utf8"));
 const corpus=JSON.parse(await readFile(`data/public-snapshots/${pointer.id}.json`,"utf8"));
+const creatorLinks = new Set();
 async function check(path,method,expected,payload) {
   const response = await new Promise((resolve,reject) => {
     const req = request({ hostname:"127.0.0.1",port,path,method,agent:false,headers:{"Content-Type":"application/json"} },res => {
@@ -38,6 +39,7 @@ async function check(path,method,expected,payload) {
   });
   assertPublicText(response.body,sensitiveValues); surfaces.push({path,method,body:response.body});
   if(response.status!==expected)throw new Error(`${method} ${path} returned ${response.status}; expected ${expected}`);
+  if(path==="/sources" && method==="GET") for(const match of response.body.matchAll(/href="(\/intelligence\?creator=[^"]+)"/g)) creatorLinks.add(match[1].replaceAll("&amp;","&"));
   if(expected===200 && !response.cdnCache?.includes("s-maxage=60"))throw new Error(`Public read is missing CDN cache policy: ${path}`);
   if(expected===200 && Buffer.byteLength(response.body)>2*1024*1024)throw new Error(`Public response exceeds audit size budget: ${path}`);
   if(expected===403 && method!=="HEAD" && !response.body.includes("PUBLIC_READ_ONLY"))throw new Error("Missing public denial code");
@@ -50,6 +52,7 @@ async function check(path,method,expected,payload) {
 }
 try {
   for(const path of ["/","/intelligence","/intelligence/briefings","/players","/fixtures","/ask","/sources","/settings","/api/entities/search?q=Saka"])await check(path,"GET",200);
+  for(const link of creatorLinks)await check(link,"GET",200);
   await check("/api/entities/search?q=Saka","HEAD",200);
   for(const type of ["PLAYER","TEAM"]) {
     const entity=corpus.tables.entities.find(row=>row.type===type);
