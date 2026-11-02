@@ -11,7 +11,7 @@ const insightA = "10000000-0000-4000-8000-000000000001";
 const insightB = "10000000-0000-4000-8000-000000000002";
 const splitId = "20000000-0000-4000-8000-000000000001";
 
-test("OpenAI summary output is constrained to the supplied evidence IDs", () => {
+test("OpenAI summary output requires UUID citations before service-level allowlist validation", () => {
   const schema = createRunSummaryOutputSchema([insightA, insightB], []);
   const result = schema.safeParse({
     title: "Report",
@@ -23,7 +23,7 @@ test("OpenAI summary output is constrained to the supplied evidence IDs", () => 
     ].map((key) => [key, []])),
     splitDecisionIds: [],
   });
-  assert.equal(result.success, false);
+  assert.equal(result.success, true);
 });
 
 const context: RunSummaryContext = {
@@ -33,8 +33,8 @@ const context: RunSummaryContext = {
   excludedEpisodeCount: 1, distinctCreatorCount: 2,
   failedEpisodes: [{ episodeId: "failed", title: "Failed episode", sourceName: "Creator C", errorMessage: "Transcript unavailable" }],
   insights: [
-    { id: insightA, sourceId: "source-a", sourceName: "Creator A", episodeId: "episode-a", episodeTitle: "A", sourceUrl: "https://example.com/a", publishedAt: "2026-08-07T10:00:00Z", claim: "Buy Player", reasoning: "Fixtures", primaryCategory: "TRANSFER_DECISION", recommendation: "BUY", timeHorizon: "SHORT", entities: [{ type: "PLAYER", name: "Player", role: "SUBJECT" }] },
-    { id: insightB, sourceId: "source-b", sourceName: "Creator B", episodeId: "episode-b", episodeTitle: "B", sourceUrl: "https://example.com/b", publishedAt: "2026-08-08T10:00:00Z", claim: "Buy Player", reasoning: "Role", primaryCategory: "TRANSFER_DECISION", recommendation: "BUY", timeHorizon: "SHORT", entities: [{ type: "PLAYER", name: "Player", role: "SUBJECT" }] },
+    { id: insightA, sourceId: "source-a", sourceName: "Creator A", episodeId: "episode-a", episodeTitle: "A", sourceUrl: "https://example.com/a", publishedAt: "2026-08-07T10:00:00Z", timestampSeconds: null, claim: "Buy Player", reasoning: "Fixtures", primaryCategory: "TRANSFER_DECISION", recommendation: "BUY", timeHorizon: "SHORT", entities: [{ type: "PLAYER", name: "Player", role: "SUBJECT" }] },
+    { id: insightB, sourceId: "source-b", sourceName: "Creator B", episodeId: "episode-b", episodeTitle: "B", sourceUrl: "https://example.com/b", publishedAt: "2026-08-08T10:00:00Z", timestampSeconds: null, claim: "Buy Player", reasoning: "Role", primaryCategory: "TRANSFER_DECISION", recommendation: "BUY", timeHorizon: "SHORT", entities: [{ type: "PLAYER", name: "Player", role: "SUBJECT" }] },
   ],
   splitDecisions: [{ id: splitId, question: "Buy now or wait?", unresolvedQuestion: "Timing", implication: "Transfer priority", positions: [
     { position: "BUY", reasoning: "Upside", supportingInsightIds: [insightA], creators: ["Creator A"], creatorCount: 1 },

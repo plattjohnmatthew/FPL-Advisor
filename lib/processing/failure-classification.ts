@@ -8,3 +8,7 @@ export function isRetryableFailure(error: unknown) {
   }
   return false;
 }
+
+export function isAutomaticEpisodeRetryEligible(latestFailure: { stage: string; retryable: boolean } | undefined) {
+  return latestFailure?.stage !== "TRANSCRIPT_ACQUISITION" || latestFailure.retryable;
+}

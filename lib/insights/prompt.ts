@@ -11,4 +11,6 @@ When timestamped transcript segments are supplied, cite every segment that direc
 
 For entities, use the conventional full player or team name when the transcript supports it. Keep matching conservative. Entity role should briefly describe its function in the claim, such as SUBJECT, ALTERNATIVE, OPPONENT, or TEAM_CONTEXT.
 
+When canonical current-squad identity context is supplied, use it only to resolve a genuinely mentioned shortened name, surname, or nickname. It must never cause an unsupported claim to be extracted, increase confidence, or override ambiguous transcript evidence.
+
 Conflicting views within one episode must remain separate atomic insights. Do not synthesize cross-creator split decisions.`;

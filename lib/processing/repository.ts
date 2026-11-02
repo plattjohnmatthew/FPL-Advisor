@@ -15,6 +15,7 @@ import type { NormalizedTranscriptResult } from "@/lib/transcripts/provider";
 import type { ExtractionResult } from "@/lib/insights/extractor";
 import type { ProcessingRunOptions } from "./options";
 import type { NormalizedUrlItem } from "./youtube-url-batch";
+import type { TranscriptProviderCallRecord } from "@/lib/transcripts/audited-provider";
 
 export type StoredTranscript = {
   id: string;
@@ -57,6 +58,12 @@ export interface ProcessingRepository {
   createSpecificUrlBatchRun?(items: NormalizedUrlItem[]): Promise<string>;
   findEpisodeByExternalId?(externalEpisodeId: string): Promise<StoredEpisode | null>;
   isEpisodeFullyProcessed?(episodeId: string): Promise<boolean>;
+  getEpisode?(episodeId: string): Promise<StoredEpisode | null>;
+  createManualEpisodeRun?(episode: StoredEpisode): Promise<string>;
+  setEpisodePaused?(episodeId: string, paused: boolean): Promise<void>;
+  isEpisodePaused?(episodeId: string): Promise<boolean>;
+  recordTranscriptProviderCall?(record: TranscriptProviderCallRecord): Promise<void>;
+  markTranscriptProviderFallbackUsed?(record: { provider: string; episodeId: string; processingRunId: string | null; fallbackProvider: string; fallbackReason: string }): Promise<void>;
   linkRunSource?(runId: string, sourceId: string): Promise<void>;
   updateUrlBatchItem?(runId: string, videoId: string, values: { status: string; episodeId?: string; errorMessage?: string | null }): Promise<void>;
   updateUrlBatchAlreadyProcessedCount?(runId: string, count: number): Promise<void>;

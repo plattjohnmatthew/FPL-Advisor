@@ -4,6 +4,10 @@ import type { RunSummary, RunSummaryContext } from "./schema";
 import type { SynthesisScope } from "./schema";
 import { REPORT_SECTION_KEYS } from "./schema";
 import { aggregateSentiment, calculateSubjectAttention } from "@/lib/opinions/aggregation";
+import { synthesisCacheMetadata } from "./cache";
+import { localDateRangeToUtcBounds } from "@/lib/dates/calendar-window";
+
+export class NoEligibleContentError extends Error {}
 
 export function applyCreatorAggregation(summary: RunSummary, insights: RunSummaryContext["insights"]) {
   const insightById = new Map(insights.map((item) => [item.id, item]));
@@ -48,27 +52,38 @@ export class RunSummarySynthesisService {
 
   async synthesizeDateRange(fromDate: string, toDate: string, timezoneOffsetMinutes = 0) {
     const scope = { type: "DATE_RANGE" as const, fromDate, toDate };
-    return this.synthesize(scope, () => this.repository.loadDateRangeContext(fromDate, toDate, timezoneOffsetMinutes));
+    return this.synthesize(scope, () => this.repository.loadDateRangeContext(fromDate, toDate, timezoneOffsetMinutes), localDateRangeToUtcBounds(fromDate, toDate, timezoneOffsetMinutes));
   }
 
-  private async synthesize(scope: SynthesisScope, loadContext: () => Promise<RunSummaryContext>) {
+  private async synthesize(scope: SynthesisScope, loadContext: () => Promise<RunSummaryContext>, bounds: ReturnType<typeof localDateRangeToUtcBounds> | null = null) {
     const attemptId = await this.repository.startAttempt(scope);
     try {
       const context = await loadContext();
       if (context.includedEpisodeIds.length === 0 || context.insights.length === 0) {
-        throw new Error("No successfully processed episodes with persisted insights match this synthesis scope.");
+        throw new NoEligibleContentError("No successfully processed episodes with persisted insights match this synthesis scope.");
       }
-      const generation = await this.generator.generate(context, { requestId: attemptId });
-    const insightById = new Map(context.insights.map((item) => [item.id, item]));
-    const allowedSplits = new Set(context.splitDecisions.map((item) => item.id));
-    for (const splitId of generation.summary.splitDecisionIds) {
-      if (!allowedSplits.has(splitId)) throw new Error(`Run summary referenced unknown split-decision ID: ${splitId}`);
-    }
-    this.validateIds(generation.summary.overviewSupportingInsightIds, insightById);
-    applyCreatorAggregation(generation.summary, context.insights);
+      const identity = scope.type === "DATE_RANGE" && this.generator.getIdentity ? await this.generator.getIdentity() : null;
+      const metadata = identity ? synthesisCacheMetadata(context, identity, bounds) : undefined;
+      const reusable = metadata && this.repository.findReusable ? await this.repository.findReusable(context, metadata) : null;
+      if (reusable) {
+        await this.repository.finishAttempt(attemptId, reusable);
+        return { synthesisId: reusable, includedEpisodeCount: context.includedEpisodeIds.length, excludedEpisodeCount: context.excludedEpisodeCount, reused: true };
+      }
+      const generation = { ...await this.generator.generate(context, { requestId: attemptId }) };
+      delete generation.cacheMetadata;
+      // Never label a result reusable if settings changed between identity lookup and generation.
+      if (metadata && generation.model === identity!.model && generation.promptVersion === identity!.promptVersion
+        && (generation.synthesisMode !== "HIERARCHICAL" || (generation.reductionModel === identity!.reductionModel && generation.reductionPromptVersion === identity!.reductionPromptVersion))) generation.cacheMetadata = metadata;
+      const insightById = new Map(context.insights.map((item) => [item.id, item]));
+      const allowedSplits = new Set(context.splitDecisions.map((item) => item.id));
+      for (const splitId of generation.summary.splitDecisionIds) {
+        if (!allowedSplits.has(splitId)) throw new Error(`Run summary referenced unknown split-decision ID: ${splitId}`);
+      }
+      this.validateIds(generation.summary.overviewSupportingInsightIds, insightById);
+      applyCreatorAggregation(generation.summary, context.insights);
       const synthesisId = await this.repository.persist(scope, context, generation);
       await this.repository.finishAttempt(attemptId, synthesisId);
-      return { synthesisId, includedEpisodeCount: context.includedEpisodeIds.length, excludedEpisodeCount: context.excludedEpisodeCount };
+      return { synthesisId, includedEpisodeCount: context.includedEpisodeIds.length, excludedEpisodeCount: context.excludedEpisodeCount, reused: false };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown synthesis failure";
       await this.repository.failAttempt(attemptId, message);

@@ -1,0 +1,38 @@
+{
+  "realLayouts": [
+    {
+      "width": 1440,
+      "route": "/sources",
+      "noOverflow": true
+    },
+    {
+      "width": 1024,
+      "route": "/sources",
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "route": "/sources",
+      "noOverflow": true
+    }
+  ],
+  "checks": [
+    "Overview has no processing controls",
+    "failure details collapsed",
+    "immediate retry state",
+    "one retry request",
+    "cancel while retry request pending",
+    "cooperative stopping state",
+    "refresh during processing",
+    "successful retry clears failure",
+    "dismiss retains failed status",
+    "resume",
+    "source selection",
+    "creator request source snapshot",
+    "URL batch request",
+    "no runtime errors"
+  ],
+  "writesIntercepted": 9,
+  "liveWriteRequests": 0,
+  "errors": []
+}

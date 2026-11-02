@@ -1,17 +1,5 @@
-import Dashboard from "./dashboard";
-import { emptyDashboardSnapshot, getDashboardSnapshot } from "@/lib/dashboard/data";
+import { Overview } from "@/components/overview";
+import { getOverviewData } from "@/lib/overview/data";
 
 export const dynamic = "force-dynamic";
-
-export default async function Home() {
-  let snapshot;
-
-  try {
-    snapshot = await getDashboardSnapshot();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to load dashboard data.";
-    snapshot = emptyDashboardSnapshot(message);
-  }
-
-  return <Dashboard initialSnapshot={snapshot} />;
-}
+export default async function Home() { return <Overview data={await getOverviewData()} />; }

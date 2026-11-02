@@ -1,8 +1,11 @@
+import { disabledResponse } from "@/lib/app-config";
 import { NextResponse } from "next/server";
 import { SupabaseSourceLibraryRepository } from "@/lib/sources/repository";
 import { YouTubeChannelResolver } from "@/lib/sources/youtube-channel-resolver";
 
 export async function PATCH(request: Request) {
+  const denied = disabledResponse("canProcessSources"); if (denied) return denied;
+
   try {
     const body = await request.json();
     if (!Array.isArray(body.selectedSourceIds) || body.selectedSourceIds.some((id: unknown) => typeof id !== "string")) throw new Error("Creator selection is invalid.");
@@ -12,6 +15,8 @@ export async function PATCH(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const denied = disabledResponse("canProcessSources"); if (denied) return denied;
+
   try {
     const body = await request.json();
     if (typeof body.channelUrl !== "string") throw new Error("Enter a YouTube channel URL.");

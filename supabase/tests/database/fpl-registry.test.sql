@@ -1,0 +1,22 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(11);
+select has_table('public','fpl_teams','canonical FPL teams exist');
+select has_table('public','fpl_players','canonical FPL players exist');
+select has_table('public','fpl_sync_runs','FPL sync audit exists');
+insert into public.fpl_teams(fpl_team_id,name,short_name,code,updated_at) values (1,'Arsenal','ARS',3,now()),(2,'Chelsea','CHE',8,now());
+insert into public.fpl_players(fpl_player_id,web_name,first_name,second_name,known_name,canonical_name,fpl_team_id,position,current_price,status,can_select,can_transact,removed,updated_at)
+values (10,'Saka','Bukayo','Saka',null,'Bukayo Saka',1,'MID',10.0,'a',true,true,false,now()),(11,'Smith','John','Smith',null,'John Smith',2,'MID',6.5,'a',true,true,false,now()),(12,'Smith','James','Smith',null,'James Smith',1,'DEF',5.0,'a',true,true,false,now());
+insert into public.entities(id,type,canonical_name,aliases) values ('90000000-0000-4000-8000-000000000001','PLAYER','Saka','{}');
+select is((select external_fpl_id from public.entities where id='90000000-0000-4000-8000-000000000001'),10,'unique web name resolves');
+select is((select fpl_match_status from public.entities where id='90000000-0000-4000-8000-000000000001'),'RESOLVED','resolved entity is flagged');
+insert into public.entities(id,type,canonical_name,aliases) values ('90000000-0000-4000-8000-000000000002','PLAYER','Smith','{}');
+select is((select external_fpl_id from public.entities where id='90000000-0000-4000-8000-000000000002'),null,'ambiguous display name remains unresolved');
+select is((select fpl_match_status from public.entities where id='90000000-0000-4000-8000-000000000002'),'UNRESOLVED','ambiguous entity is flagged for review');
+update public.fpl_players set fpl_team_id=2,current_price=10.1 where fpl_player_id=10;
+select is((select fpl_team_id from public.fpl_players where fpl_player_id=10),2,'team changes update current metadata');
+select is((select current_price from public.fpl_players where fpl_player_id=10),10.1::numeric,'price changes use human-safe millions');
+select throws_ok($$insert into public.entities(type,canonical_name,external_fpl_id) values ('PLAYER','Invented',999)$$,'P0001','Unknown FPL player ID 999','invalid authoritative IDs are rejected');
+select is((select count(*)::integer from public.entities where id in ('90000000-0000-4000-8000-000000000001','90000000-0000-4000-8000-000000000002')),2,'registry updates preserve historical entities');
+select * from finish();
+rollback;

@@ -1,3 +1,4 @@
+import { requireCapability } from "@/lib/app-config";
 import type { StoredEpisode } from "@/lib/processing/types";
 import type { NormalizedTranscriptResult, TranscriptProvider, TranscriptSegment } from "./provider";
 
@@ -14,6 +15,7 @@ export class ManualTranscriptProvider implements TranscriptProvider {
   constructor(private readonly resolve: ManualTranscriptResolver) {}
 
   async acquireTranscript(episode: StoredEpisode): Promise<NormalizedTranscriptResult> {
+    requireCapability("canProcessSources");
     const input = await this.resolve(episode);
     const rawText = input?.rawText.trim();
 

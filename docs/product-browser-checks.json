@@ -1,0 +1,375 @@
+{
+  "audit": [
+    {
+      "width": 1440,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1440,
+      "path": "/intelligence",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1440,
+      "path": "/ask",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1440,
+      "path": "/players",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1440,
+      "path": "/squad",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1440,
+      "path": "/sources",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1440,
+      "path": "/settings",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1440,
+      "path": "/fixtures",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1440,
+      "path": "/analyses",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/intelligence",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/ask",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/players",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/squad",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/sources",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/settings",
+      "status": 200,
+      "overflow": false,
+      "h1": 2,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/fixtures",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 1024,
+      "path": "/analyses",
+      "status": 200,
+      "overflow": false,
+      "h1": 2,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/intelligence",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/ask",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/players",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/squad",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/sources",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/settings",
+      "status": 200,
+      "overflow": false,
+      "h1": 2,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/fixtures",
+      "status": 200,
+      "overflow": false,
+      "h1": 2,
+      "unlabelled": []
+    },
+    {
+      "width": 768,
+      "path": "/analyses",
+      "status": 200,
+      "overflow": false,
+      "h1": 2,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/intelligence",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/ask",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/players",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/squad",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/sources",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/settings",
+      "status": 200,
+      "overflow": false,
+      "h1": 2,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/fixtures",
+      "status": 200,
+      "overflow": false,
+      "h1": 1,
+      "unlabelled": []
+    },
+    {
+      "width": 390,
+      "path": "/analyses",
+      "status": 200,
+      "overflow": false,
+      "h1": 2,
+      "unlabelled": []
+    }
+  ],
+  "checks": [
+    "grouped club autocomplete",
+    "keyboard arrows Enter Escape",
+    "player and team research",
+    "period filter",
+    "browser back forward",
+    "search URL",
+    "15 clickable players",
+    "four My Team 14-day shortcuts",
+    "mobile drawer Escape",
+    "reduced motion",
+    "settled routes each have one visible page heading",
+    "primary link button contrast foreground",
+    "human-readable autocomplete failure",
+    "settings failure preserves saved instructions through intercepted request",
+    "fixture mode preserves 15 picks and all player links use 14 days"
+  ],
+  "playerHref": "/entities/8b1a96a5-c8a7-4f5e-ab31-6e7a925470b0?range=30d",
+  "teamHref": "/entities/7c86d863-3687-4a80-b84f-1933948355ee?range=30d",
+  "interceptedWrites": [
+    "http://localhost:3101/api/prompt-settings"
+  ],
+  "runtimeErrors": [],
+  "visibleHeadingAudit": [
+    {
+      "path": "/",
+      "visible": [
+        "Your FPL briefing"
+      ]
+    },
+    {
+      "path": "/intelligence",
+      "visible": [
+        "Intelligence"
+      ]
+    },
+    {
+      "path": "/ask",
+      "visible": [
+        "Ask anything about FPL"
+      ]
+    },
+    {
+      "path": "/players",
+      "visible": [
+        "Players & teams"
+      ]
+    },
+    {
+      "path": "/squad",
+      "visible": [
+        "My Squad"
+      ]
+    },
+    {
+      "path": "/sources",
+      "visible": [
+        "Sources & processing"
+      ]
+    },
+    {
+      "path": "/settings",
+      "visible": [
+        "AI instructions"
+      ]
+    },
+    {
+      "path": "/fixtures",
+      "visible": [
+        "Fixture difficulty"
+      ]
+    },
+    {
+      "path": "/analyses",
+      "visible": [
+        "My Analyses"
+      ]
+    }
+  ],
+  "primaryLinkColors": {
+    "text": "rgb(255, 255, 255)",
+    "background": "rgb(17, 120, 72)"
+  }
+}

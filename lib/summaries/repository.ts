@@ -1,10 +1,12 @@
 import "server-only";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createResearchDataClient as createSupabaseServerClient } from "@/lib/research-data";
 import type { RunSummaryGeneration } from "./generator";
 import type { RunSummaryContext, SummaryInsightContext, SummarySplitContext, SynthesisScope } from "./schema";
 import { batchValues } from "@/lib/supabase/batch";
+import { collectDatabasePages } from "@/lib/supabase/pagination";
 import { localDateRangeToUtcBounds } from "@/lib/dates/calendar-window";
+import { SYNTHESIS_PIPELINE_VERSION, validStoredSynthesis, type SynthesisCacheMetadata } from "./cache";
 
 type RunStatus = Exclude<RunSummaryContext["runStatus"], null>;
 
@@ -31,6 +33,7 @@ export function evaluateSynthesisEligibility(candidates: SynthesisEligibilityCan
 }
 
 export interface RunSummaryRepository {
+  findReusable?(context: RunSummaryContext, metadata: SynthesisCacheMetadata): Promise<string | null>;
   findLatestRelevantRun(): Promise<{ id: string; status: RunStatus } | null>;
   loadRunContext(runId: string, runStatus: RunStatus): Promise<RunSummaryContext>;
   loadDateRangeContext(fromDate: string, toDate: string, timezoneOffsetMinutes?: number): Promise<RunSummaryContext>;
@@ -41,6 +44,20 @@ export interface RunSummaryRepository {
 }
 
 export class SupabaseRunSummaryRepository implements RunSummaryRepository {
+  async findReusable(context: RunSummaryContext, metadata: SynthesisCacheMetadata) {
+    if (context.scope.type !== "DATE_RANGE") return null;
+    const { data, error } = await createSupabaseServerClient().from("run_summaries")
+      .select("id,summary_data,synthesis_episodes(episode_id),synthesis_attempts!inner(status)").eq("scope_type", "DATE_RANGE")
+      .eq("synthesis_attempts.status", "COMPLETED")
+      .eq("from_date", context.scope.fromDate).eq("to_date", context.scope.toDate)
+      .eq("model", metadata.identity.model).eq("prompt_version", metadata.identity.promptVersion)
+      .contains("summary_data", { _synthesis: { fingerprint: metadata.fingerprint } })
+      .order("generated_at", { ascending: false }).limit(1).maybeSingle();
+    if (error) throw new Error(`Unable to check stored synthesis: ${error.message}`);
+    if (!data) return null;
+    const included = (data.synthesis_episodes as { episode_id: string }[]).map((row) => row.episode_id).sort();
+    return validStoredSynthesis(data.summary_data, included, context, metadata) ? data.id as string : null;
+  }
   async findLatestRelevantRun() {
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase.from("processing_runs").select("id, status")
@@ -97,9 +114,8 @@ export class SupabaseRunSummaryRepository implements RunSummaryRepository {
   async loadDateRangeContext(fromDate: string, toDate: string, timezoneOffsetMinutes = 0) {
     const supabase = createSupabaseServerClient();
     const bounds = localDateRangeToUtcBounds(fromDate, toDate, timezoneOffsetMinutes);
-    const { data: episodes, error: episodeError } = await supabase.from("episodes").select("id, title, source_id, transcripts(id), insights(id)")
-      .gte("published_at", bounds.startInclusive).lt("published_at", bounds.endExclusive);
-    if (episodeError) throw new Error(`Unable to load date-range episodes: ${episodeError.message}`);
+    const episodes = await collectDatabasePages((from, to) => supabase.from("episodes").select("id, title, source_id, transcripts(id), insights(id)")
+      .gte("published_at", bounds.startInclusive).lt("published_at", bounds.endExclusive).order("id").range(from, to), "Unable to load date-range episodes");
     const sourceIds = [...new Set(episodes.map((row) => row.source_id as string))];
     const { data: sources, error: sourceError } = sourceIds.length === 0 ? { data: [], error: null }
       : await supabase.from("sources").select("id, name").in("id", sourceIds);
@@ -130,14 +146,15 @@ export class SupabaseRunSummaryRepository implements RunSummaryRepository {
     return this.loadInsightsByIds(insightIds);
   }
 
+  async loadSplitsForDisplay(insightIds: string[]) { return this.loadRelevantSplits(insightIds); }
+
   private async loadInsights(episodeIds: string[]) {
     if (episodeIds.length === 0) return [];
     const supabase = createSupabaseServerClient();
     const rows: Array<Record<string, unknown>> = [];
     for (const batch of batchValues(episodeIds)) {
-      const { data, error } = await supabase.from("insights")
-        .select("id, episode_id, claim, reasoning, primary_category, recommendation, time_horizon").in("episode_id", batch);
-      if (error) throw new Error(`Unable to load successful-run insights: ${error.message}`);
+      const data = await collectDatabasePages((from, to) => supabase.from("insights")
+        .select("id, episode_id, claim, reasoning, primary_category, recommendation, time_horizon, timestamp_seconds").in("episode_id", batch).order("id").range(from, to), "Unable to load successful-run insights");
       rows.push(...data);
     }
     return this.hydrateInsights(rows);
@@ -149,7 +166,7 @@ export class SupabaseRunSummaryRepository implements RunSummaryRepository {
     const rows: Array<Record<string, unknown>> = [];
     for (const batch of batchValues(insightIds)) {
       const { data, error } = await supabase.from("insights")
-        .select("id, episode_id, claim, reasoning, primary_category, recommendation, time_horizon").in("id", batch);
+        .select("id, episode_id, claim, reasoning, primary_category, recommendation, time_horizon, timestamp_seconds").in("id", batch);
       if (error) throw new Error(`Unable to load split-support insights: ${error.message}`);
       rows.push(...data);
     }
@@ -174,7 +191,7 @@ export class SupabaseRunSummaryRepository implements RunSummaryRepository {
     const insightIds = rows.map((row) => row.id as string);
     const entityLinks: Array<Record<string, unknown>> = [];
     for (const batch of batchValues(insightIds)) {
-      const { data, error } = await supabase.from("insight_entities").select("insight_id, role, entities(type, canonical_name)").in("insight_id", batch);
+      const { data, error } = await supabase.from("insight_entities").select("insight_id, role, entities(id, type, canonical_name)").in("insight_id", batch);
       if (error) throw new Error(`Unable to hydrate insight entities: ${error.message}`);
       entityLinks.push(...data);
     }
@@ -184,12 +201,12 @@ export class SupabaseRunSummaryRepository implements RunSummaryRepository {
         id: row.id as string, sourceId: episode.source_id as string,
         sourceName: sourceById.get(episode.source_id as string) ?? "Unknown source",
         episodeId: episode.id as string, episodeTitle: episode.title as string, sourceUrl: episode.source_url as string,
-        publishedAt: episode.published_at as string,
+        publishedAt: episode.published_at as string, timestampSeconds: row.timestamp_seconds as number | null,
         claim: row.claim as string, reasoning: row.reasoning as string, primaryCategory: row.primary_category as string,
         recommendation: row.recommendation as string, timeHorizon: row.time_horizon as string,
         entities: entityLinks.filter((link) => link.insight_id === row.id).map((link) => {
-          const entity = link.entities as unknown as { type: "PLAYER" | "TEAM"; canonical_name: string };
-          return { type: entity.type, name: entity.canonical_name, role: link.role as string };
+          const entity = link.entities as unknown as { id: string; type: "PLAYER" | "TEAM"; canonical_name: string };
+          return { id: entity.id, type: entity.type, name: entity.canonical_name, role: link.role as string };
         }),
       };
     });
@@ -213,6 +230,11 @@ export class SupabaseRunSummaryRepository implements RunSummaryRepository {
       matchingPositions.push(...data);
     }
     const decisionIds = [...new Set(matchingPositions.map((row) => row.split_decision_id as string))];
+    return this.loadSplitsByIdsForDisplay(decisionIds);
+  }
+
+  async loadSplitsByIdsForDisplay(decisionIds: string[]): Promise<SummarySplitContext[]> {
+    const supabase = createSupabaseServerClient();
     const decisions: Array<Record<string, unknown>> = [];
     const positions: Array<Record<string, unknown>> = [];
     for (const batch of batchValues(decisionIds)) {
@@ -286,12 +308,20 @@ export class SupabaseRunSummaryRepository implements RunSummaryRepository {
       target_excluded_episodes: context.excludedEpisodes,
       target_distinct_creator_count: context.distinctCreatorCount,
       target_summary_text: generation.summary.overviewParagraphs.join("\n\n"),
-      target_summary_data: generation.summary, target_generated_at: generation.generatedAt,
+      target_summary_data: { ...generation.summary, _synthesis: generation.cacheMetadata ?? { identity: { pipelineVersion: SYNTHESIS_PIPELINE_VERSION }, sourceIds: [...new Set(context.insights.filter((item) => context.includedEpisodeIds.includes(item.episodeId)).map((item) => item.sourceId))].sort() } }, target_generated_at: generation.generatedAt,
       target_prompt_version: generation.promptVersion, target_model: generation.model,
       target_input_tokens: generation.inputTokens, target_output_tokens: generation.outputTokens,
       target_total_tokens: generation.totalTokens,
     });
     if (error) throw new Error(`Unable to persist synthesis: ${error.message}`);
+    const { error: metadataError } = await supabase.from("run_summaries").update({
+      synthesis_mode: generation.synthesisMode ?? "DIRECT", eligible_insight_count: context.insights.length,
+      creator_brief_count: generation.creatorBriefCount ?? 0, excluded_creators: generation.excludedCreators ?? [],
+      reduction_model: generation.reductionModel ?? null, reduction_prompt_version: generation.reductionPromptVersion ?? null,
+      reduction_input_tokens: generation.reductionInputTokens ?? 0, reduction_output_tokens: generation.reductionOutputTokens ?? 0,
+      final_input_tokens: generation.inputTokens, final_output_tokens: generation.outputTokens,
+    }).eq("id", data as string);
+    if (metadataError) throw new Error(`Unable to persist synthesis architecture metadata: ${metadataError.message}`);
     return data as string;
   }
 }

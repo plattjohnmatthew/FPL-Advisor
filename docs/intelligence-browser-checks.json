@@ -1,0 +1,69 @@
+{
+  "layouts": [
+    {
+      "width": 1440,
+      "rows": 20,
+      "newestFirst": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1024,
+      "rows": 20,
+      "newestFirst": true,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "rows": 20,
+      "newestFirst": true,
+      "noOverflow": true
+    }
+  ],
+  "checks": [
+    "newest first",
+    "20-row page limit",
+    "pagination without overlap",
+    "creator filter",
+    "topic filter",
+    "inclusive date filter",
+    "source type",
+    "250ms title search",
+    "URL persistence",
+    "removable chips",
+    "clear all",
+    "source detail",
+    "preserved feed return URL",
+    "timestamp source links",
+    "empty feed",
+    "independent briefing defaults",
+    "no POST for feed or dialog load",
+    "no eligible content",
+    "failed synthesis",
+    "generating state",
+    "completed synthesis",
+    "stored synthesis reuse UI",
+    "mobile briefing",
+    "no runtime errors"
+  ],
+  "interceptedSynthesisRequests": 4,
+  "liveWriteRequests": 0,
+  "errors": [],
+  "historicalReadAudit": {
+    "period": "2026-08-03 to 2026-08-09",
+    "eligibleEpisodes": 16,
+    "storedInsights": 207,
+    "historicalBriefingFound": true,
+    "historicalCitedInsights": 85,
+    "historicalCreators": 4,
+    "legacyReportAssumedReusable": false,
+    "realHistoricalMobileScreenshot": true,
+    "databaseWrites": 0,
+    "openAICalls": 0
+  },
+  "compatibility": {
+    "sourcesRetainsOperations": true,
+    "overviewHasNoIngestionControls": true,
+    "manualBriefingEntryOnlyInIntelligence": true,
+    "errors": []
+  }
+}

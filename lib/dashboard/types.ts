@@ -4,6 +4,10 @@ import type { RunSummary, SummaryInsightContext, SummarySplitContext } from "@/l
 import type { SourceLibraryItem } from "@/lib/sources/types";
 
 export type DashboardEpisode = {
+  runId?: string | null;
+  attemptStartedAt?: string | null;
+  attemptCompletedAt?: string | null;
+  failureDismissedAt?: string | null;
   episodeId: string;
   sourceName: string;
   title: string;
@@ -27,24 +31,27 @@ export type DashboardRunFailure = {
 };
 
 export type DashboardUrlBatchItem = {
+  updatedAt?: string | null;
   lineNumber: number; submittedUrl: string; normalizedUrl: string | null; videoId: string | null;
   status: string; errorMessage: string | null; episodeId: string | null;
   episodeTitle: string | null; sourceUrl: string | null; sourceName: string | null;
 };
 
 export type DashboardSnapshot = {
+  lastSuccessfulIngestionAt?: string | null;
   aiInstructions: {
     extraction: { value: string; version: number; updatedAt: string };
     synthesis: { value: string; version: number; updatedAt: string };
   };
   enabledSourcesCount: number;
   sourceLibrary: SourceLibraryItem[];
+  squadEntityIds: string[];
   latestRunSources: Array<{ id: string; name: string }>;
   sourcesChecked: number;
   latestRunId: string | null;
   lastRunAt: string | null;
   currentRunStatus: ProcessingRunStatus | "NOT_STARTED";
-  runType: "CREATOR_DISCOVERY" | "SPECIFIC_URL_BATCH" | null;
+  runType: "CREATOR_DISCOVERY" | "SPECIFIC_URL_BATCH" | "MANUAL_EPISODE" | null;
   batchSubmittedCount: number;
   batchEligibleCount: number;
   batchDuplicateCount: number;
@@ -62,6 +69,8 @@ export type DashboardSnapshot = {
   failedCount: number;
   cancelledCount: number;
   episodes: DashboardEpisode[];
+  retryableEpisodes: DashboardEpisode[];
+  operationEpisodes?: DashboardEpisode[];
   recentEpisodes: DashboardEpisode[];
   recentInsights: SummaryInsightContext[];
   defaultPeriodLabel: string;

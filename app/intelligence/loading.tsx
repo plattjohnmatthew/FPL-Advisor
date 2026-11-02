@@ -1,0 +1,2 @@
+import { PageHeader, Skeleton } from "@/components/ui/primitives";
+export default function IntelligenceLoading() { return <main className="intelligence-shell" aria-busy="true"><PageHeader title="Intelligence" description="Loading stored research…" /><div className="intelligence-loading"><Skeleton label="Loading filters" /><Skeleton label="Loading episodes" /><Skeleton label="Loading more episodes" /></div></main>; }

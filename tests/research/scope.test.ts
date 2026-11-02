@@ -11,6 +11,11 @@ test("Last 7 and Last 30 days use bounded episode-publication windows", () => {
   assert.equal(resolveResearchScope({ preset: "LAST_30_DAYS", timezoneOffsetMinutes: 0 }, plan, now).dateFrom, "2026-07-10T00:00:00.000Z");
 });
 
+test("Last 14 days is a bounded inclusive publication window", () => {
+  const scope = resolveResearchScope({ preset: "LAST_14_DAYS", timezoneOffsetMinutes: 0 }, plan, new Date("2026-08-09T12:00:00Z"));
+  assert.equal(scope.label, "Last 14 days"); assert.equal(scope.dateFrom, "2026-07-27T00:00:00.000Z"); assert.equal(scope.dateTo, "2026-08-10T00:00:00.000Z");
+});
+
 test("This week is Monday through Sunday across a week boundary", () => {
   const scope = resolveResearchScope({ preset: "THIS_WEEK", timezoneOffsetMinutes: 0 }, plan, new Date("2026-08-03T00:01:00Z"));
   assert.equal(scope.dateFrom, "2026-08-03T00:00:00.000Z"); assert.equal(scope.dateTo, "2026-08-10T00:00:00.000Z");

@@ -1,0 +1,74 @@
+{
+  "layouts": [
+    {
+      "width": 1440,
+      "findings": 5,
+      "latestEpisodes": 5,
+      "noOverflow": true
+    },
+    {
+      "width": 1024,
+      "findings": 5,
+      "latestEpisodes": 5,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "findings": 5,
+      "latestEpisodes": 5,
+      "noOverflow": true
+    }
+  ],
+  "shortcutResults": [
+    {
+      "label": "Captaincy",
+      "route": "/ask",
+      "prefilled": true
+    },
+    {
+      "label": "Transfers",
+      "route": "/ask",
+      "prefilled": true
+    },
+    {
+      "label": "Players to Watch",
+      "route": "/ask",
+      "prefilled": true
+    },
+    {
+      "label": "My Squad",
+      "route": "/squad"
+    }
+  ],
+  "checks": [
+    "persisted research only",
+    "honest missing-current-briefing notice",
+    "five current findings",
+    "creator breadth",
+    "squad markers",
+    "latest five successful episodes",
+    "newest-first content",
+    "all decision shortcuts",
+    "suggested prompts",
+    "question GET navigation",
+    "Ask prefill without auto-submit",
+    "internal evidence details",
+    "latest episode details",
+    "View all intelligence",
+    "Sources operations retained",
+    "no browser errors"
+  ],
+  "livePostRequests": 0,
+  "errors": [],
+  "finalPresentation": {
+    "compactCreatorBreadth": true,
+    "focusedRelatedEntities": true,
+    "allWidthsRechecked": true,
+    "errors": []
+  },
+  "readOnlyAudit": {
+    "databaseGets": 20,
+    "databaseWrites": 0,
+    "providerCalls": 0
+  }
+}

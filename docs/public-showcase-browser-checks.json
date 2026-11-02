@@ -1,0 +1,33 @@
+{
+  "edition": "public_read_only",
+  "snapshot": "f9eef240-91e5-4103-b497-c0828ce3659c",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "verified": [
+    "Generate briefing opens shared dialog",
+    "Historical Regenerate opens shared dialog",
+    "Ask click and mobile Enter submission open shared dialog",
+    "Process creators, URLs, add creator and selection are gated",
+    "Retry, resume, pause and cancel are gated",
+    "FPL refresh is gated",
+    "Escape closes and restores trigger focus",
+    "Mobile How it works navigation closes drawer",
+    "Keyboard player autocomplete opens Bukayo Saka with actual evidence",
+    "GitHub and setup destinations match canonical repository",
+    "No horizontal overflow in mobile dialog or configuration page",
+    "No browser error logs observed"
+  ],
+  "mySquad": "Hidden; not approved or published. Opt-in contract and immutable backend boundary tested automatically.",
+  "screenshots": [
+    "public-showcase-desktop.jpg",
+    "public-showcase-mobile.jpg"
+  ]
+}

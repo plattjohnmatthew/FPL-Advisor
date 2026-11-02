@@ -47,6 +47,7 @@ class InMemoryProcessingRepository implements ProcessingRepository {
   readonly runSourceIds = new Map<string, string[]>();
   private runNumber = 0;
   private episodeNumber = 0;
+  persistenceFailuresRemaining = 0;
 
   async createRun(options: ProcessingRunOptions, selectedSourceIds?: string[]) {
     this.runOptions.push(options);
@@ -102,6 +103,7 @@ class InMemoryProcessingRepository implements ProcessingRepository {
     return stored;
   }
   async persistExtraction(episodeId: string, extraction: ExtractionResult) {
+    if (this.persistenceFailuresRemaining > 0) { this.persistenceFailuresRemaining -= 1; throw new Error("Database persistence failed"); }
     if (this.extractions.has(episodeId)) return 0;
     this.extractions.set(episodeId, extraction);
     return extraction.insights.length;
@@ -270,6 +272,17 @@ test("failed or malformed extraction stores no insights and remains retryable", 
   assert.equal(repository.attempts[1].retryCount, 1);
   assert.equal(repository.extractions.size, 1);
   assert.equal(repository.transcripts.size, 1, "stored transcript is reused on retry");
+  assert.equal(provider.getAttemptCount("test-source-A"), 1, "extraction retry makes no second provider call");
+});
+
+test("insight persistence retry reuses the stored transcript and makes no second provider call", async () => {
+  const repository = new InMemoryProcessingRepository(); repository.persistenceFailuresRemaining = 1;
+  const discovery = new FakeEpisodeDiscoveryProvider(new Map([["source-1", [episode("test-source-A", 10)]]]));
+  const provider = new FakeTranscriptProvider();
+  const first = await new ProcessingRunOrchestrator(repository, discovery, provider, new FakeInsightExtractor(), noSplitDetection).run();
+  assert.equal(first.status, "FAILED"); assert.equal(repository.transcripts.size, 1); assert.equal(repository.extractions.size, 0);
+  const second = await new ProcessingRunOrchestrator(repository, discovery, provider, new FakeInsightExtractor(), noSplitDetection).run();
+  assert.equal(second.status, "COMPLETED"); assert.equal(provider.getAttemptCount("test-source-A"), 1);
 });
 
 test("one malformed extraction is isolated while other episodes complete", async () => {
@@ -407,4 +420,40 @@ test("cooperative cancellation preserves completed work and starts no later epis
   assert.equal(repository.episodes.size, 3);
   assert.equal(repository.transcripts.size, 3);
   assert.equal(repository.attempts.filter((attempt) => attempt.episodeId === "episode-3").length, 1);
+});
+
+
+test("manual retry cancellation during transcript acquisition keeps transcript and skips extraction", async () => {
+  const repository = new InMemoryProcessingRepository();
+  const stored = await repository.upsertEpisode("source-1", episode("retry-cancel", 10));
+  let calls = 0;
+  const base = new FakeTranscriptProvider();
+  const provider = { acquireTranscript: async (...args: Parameters<FakeTranscriptProvider["acquireTranscript"]>) => {
+    const result = await base.acquireTranscript(...args);
+    await repository.requestCancellation("manual-run");
+    return result;
+  } };
+  const extractor = { extract: async () => { calls++; throw new Error("Must not extract"); } };
+  const orchestrator = new ProcessingRunOrchestrator(repository, new FakeEpisodeDiscoveryProvider(new Map()), provider, extractor, { detectForRun: async () => 0 });
+  const result = await orchestrator.runManualEpisode("manual-run", { episode: stored.episode, retryCount: 1 });
+  assert.equal(result.status, "CANCELLED");
+  assert.equal(repository.attempts[0].status, "CANCELLED");
+  assert.equal(repository.transcripts.size, 1);
+  assert.equal(calls, 0);
+});
+
+test("manual cancellation during extraction safely persists output and cancels run", async () => {
+  const repository = new InMemoryProcessingRepository();
+  const stored = await repository.upsertEpisode("source-1", episode("retry-extract-cancel", 10));
+  const base = new FakeInsightExtractor();
+  const extractor = { extract: async (...args: Parameters<FakeInsightExtractor["extract"]>) => {
+    const result = await base.extract(...args);
+    await repository.requestCancellation("manual-run");
+    return result;
+  } };
+  const orchestrator = new ProcessingRunOrchestrator(repository, new FakeEpisodeDiscoveryProvider(new Map()), new FakeTranscriptProvider(), extractor, { detectForRun: async () => 0 });
+  const result = await orchestrator.runManualEpisode("manual-run", { episode: stored.episode, retryCount: 1 });
+  assert.equal(result.status, "CANCELLED");
+  assert.equal(repository.attempts[0].status, "COMPLETED");
+  assert.equal(repository.extractions.size, 1);
 });

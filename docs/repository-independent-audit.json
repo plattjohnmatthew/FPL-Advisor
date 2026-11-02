@@ -1,0 +1,13 @@
+{
+  "tool": "Gitleaks",
+  "version": "8.30.1",
+  "source": "https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1",
+  "downloadVerification": "SHA-256 matches official release checksums",
+  "historyScope": "git . --log-opts=--all",
+  "historyCommits": 2,
+  "historyFindings": 0,
+  "candidateSourceFindings": 0,
+  "redaction": "100 percent",
+  "result": "PASS",
+  "limits": "Ignored private files excluded. GitHub account logs, attachments and hidden refs not inspected."
+}

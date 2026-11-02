@@ -19,7 +19,7 @@ export function createSpecificUrlBatchService() {
     new SupabaseSourceLibraryRepository(),
     new YouTubeVideoResolver(),
     new ProcessingRunOrchestrator(
-      repository, new YouTubeEpisodeDiscoveryProvider(), createTranscriptProvider(), new OpenAIInsightExtractor(),
+      repository, new YouTubeEpisodeDiscoveryProvider(), createTranscriptProvider(repository), new OpenAIInsightExtractor(),
       new SplitDecisionDetectionService(new SupabaseSplitDecisionRepository(), new OpenAISplitDecisionDetector()),
     ),
   );

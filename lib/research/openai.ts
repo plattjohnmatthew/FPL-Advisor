@@ -27,7 +27,7 @@ export class OpenAIResearchQueryInterpreter implements ResearchQueryInterpreter 
 }
 
 export class OpenAIResearchAnswerGenerator implements ResearchAnswerGenerator {
-  async answer(question: string, evidence: RetrievedEvidence[], splits: RetrievedSplitDecision[], repair?: { error: string; validEvidenceIds: string[] }, context?: { requestId: string; model: string }) {
+  async answer(question: string, evidence: RetrievedEvidence[], splits: RetrievedSplitDecision[], repair?: { error: string; validEvidenceIds: string[] }, context?: { requestId: string; model: string; domainContext?: unknown }) {
     const { apiKey } = getOpenAIEnvironment();
     const originalModel = context?.model ?? getOpenAIModel("CHAT_ANSWER");
     const model = repair ? getRepairModel(originalModel) : originalModel;
@@ -36,7 +36,7 @@ export class OpenAIResearchAnswerGenerator implements ResearchAnswerGenerator {
       model,
       input: [
         { role: "system", content: RESEARCH_ANSWER_PROMPT },
-        { role: "user", content: JSON.stringify({ question, retrievedEvidence: evidence, retrievedSplitDecisions: splits, repair }) },
+        { role: "user", content: JSON.stringify({ question, structuredContext: context?.domainContext ?? null, retrievedEvidence: evidence, retrievedSplitDecisions: splits, repair }) },
       ],
       text: { format: zodTextFormat(ResearchAnswerSchema, "fpl_research_answer") },
     }));

@@ -1,3 +1,4 @@
+import { requireCapability } from "@/lib/app-config";
 import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -31,6 +32,7 @@ async function persistUsage(context: OpenAICallContext, status: "COMPLETED" | "F
 }
 
 export async function trackOpenAICall<T extends ResponseWithUsage>(context: OpenAICallContext, operation: () => Promise<T>): Promise<T> {
+  requireCapability("canAskAI");
   const startedAt = new Date().toISOString();
   try {
     const response = await operation();

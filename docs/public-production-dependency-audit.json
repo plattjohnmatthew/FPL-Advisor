@@ -1,0 +1,13 @@
+{
+  "command": "npm audit --omit=dev --json",
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "next": "16.4.4",
+  "zod": "4.6.7"
+}

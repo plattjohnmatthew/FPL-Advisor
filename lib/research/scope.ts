@@ -27,8 +27,8 @@ export function resolveResearchScope(selection: ResearchScopeSelection, plan: Re
     const monday = new Date(localNow.getTime() - mondayOffset * 86_400_000).toISOString().slice(0, 10);
     const sunday = new Date(Date.parse(`${monday}T00:00:00.000Z`) + 6 * 86_400_000).toISOString().slice(0, 10);
     from = utcBoundary(monday, selection.timezoneOffsetMinutes); to = utcBoundary(sunday, selection.timezoneOffsetMinutes, true); label = "This week";
-  } else if (selection.preset === "LAST_7_DAYS" || selection.preset === "LAST_30_DAYS") {
-    const days = selection.preset === "LAST_7_DAYS" ? 7 : 30;
+  } else if (selection.preset === "LAST_7_DAYS" || selection.preset === "LAST_14_DAYS" || selection.preset === "LAST_30_DAYS") {
+    const days = selection.preset === "LAST_7_DAYS" ? 7 : selection.preset === "LAST_14_DAYS" ? 14 : 30;
     const start = new Date(Date.parse(`${today}T00:00:00.000Z`) - (days - 1) * 86_400_000).toISOString().slice(0, 10);
     from = utcBoundary(start, selection.timezoneOffsetMinutes); to = utcBoundary(today, selection.timezoneOffsetMinutes, true); label = `Last ${days} days`;
   } else if (selection.preset === "THIS_SEASON") {

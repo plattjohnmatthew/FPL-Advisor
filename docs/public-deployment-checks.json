@@ -1,0 +1,402 @@
+{
+  "appMode": "public_read_only",
+  "paidAndWriteSecrets": "blanked before Next environment loading",
+  "snapshotSource": "local files",
+  "snapshotReads": 0,
+  "deniedExternalCalls": 0,
+  "results": [
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200,
+      "bytes": 63782,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence",
+      "status": 200,
+      "bytes": 99251,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence/briefings",
+      "status": 200,
+      "bytes": 35038,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/players",
+      "status": 200,
+      "bytes": 19551,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/fixtures",
+      "status": 200,
+      "bytes": 108178,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/ask",
+      "status": 200,
+      "bytes": 20196,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/sources",
+      "status": 200,
+      "bytes": 31398,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/settings",
+      "status": 200,
+      "bytes": 22665,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/search?q=Saka",
+      "status": 200,
+      "bytes": 179,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/entities/search?q=Saka",
+      "status": 200,
+      "bytes": 0,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "method": "GET",
+      "path": "/entities/015351f7-8bbe-4839-8480-de85b19bd4ac?range=all",
+      "status": 200,
+      "bytes": 33858,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/entities/04bfc52a-9cb6-40d9-bc91-4be484037b87?range=all",
+      "status": 200,
+      "bytes": 34146,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/episodes/0ab03c17-15bc-4b5a-a4a1-23a0aa488d42",
+      "status": 200,
+      "bytes": 75484,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence/briefings/13d5d37e-66e7-4c0e-ad99-00d757c5442a",
+      "status": 200,
+      "bytes": 212871,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/syntheses?from=2026-08-12&to=2026-08-18&id=13d5d37e-66e7-4c0e-ad99-00d757c5442a",
+      "status": 200,
+      "bytes": 103273,
+      "cdnCache": "public, s-maxage=60, stale-while-revalidate=120",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "method": "GET",
+      "path": "/squad",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/?pageSize=1000000",
+      "status": 400,
+      "bytes": 89,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/search?q=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "status": 400,
+      "bytes": 72,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/intelligence?page=1001",
+      "status": 400,
+      "bytes": 80,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/search?select=*",
+      "status": 400,
+      "bytes": 89,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/players?q=x&q=y",
+      "status": 400,
+      "bytes": 89,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/processing-runs",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/processing-runs",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/processing-runs/url-batch",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/processing-runs/cancel",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/episodes/00000000-0000-4000-8000-000000000001/processing",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/sources",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/sources",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/syntheses",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research-query",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/fpl-sync",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/fpl-squad",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/prompt-settings",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/prompt-settings",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/.env.local",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/.git/config",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/data/public-snapshots/f9eef240-91e5-4103-b497-c0828ce3659c.json",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/_next/server/app-paths-manifest.json",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/syntheses",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/research-health",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/unreviewed",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/unreviewed",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/_next/image?url=%2Ffavicon.ico&w=3840&q=100",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "GET",
+      "path": "/analyses",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/episodes/0ab03c17-15bc-4b5a-a4a1-23a0aa488d42/processing",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/episodes/0ab03c17-15bc-4b5a-a4a1-23a0aa488d42/processing",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/episodes/0ab03c17-15bc-4b5a-a4a1-23a0aa488d42/processing",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/episodes/0ab03c17-15bc-4b5a-a4a1-23a0aa488d42/processing",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/episodes/0ab03c17-15bc-4b5a-a4a1-23a0aa488d42/processing",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/processing-runs",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "POST",
+      "path": "/api/syntheses",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/prompt-settings",
+      "status": 403,
+      "bytes": 95,
+      "vary": "Accept-Encoding"
+    }
+  ]
+}

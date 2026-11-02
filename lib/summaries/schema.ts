@@ -48,9 +48,8 @@ export function createRunSummaryOutputSchema(
   allowMultiCreatorInterpretation = true,
 ) {
   if (insightIds.length === 0) throw new Error("A run summary requires at least one allowed insight ID.");
-  const insightId = z.enum(insightIds as [string, ...string[]]);
   const reportItem = GeneratedReportItemSchema.extend({
-    supportingInsightIds: z.array(insightId).min(1),
+    supportingInsightIds: z.array(z.string().uuid()).min(1),
     interpretation: allowMultiCreatorInterpretation
       ? ReportItemSchema.shape.interpretation
       : z.literal("CREATOR_CLAIM"),
@@ -60,7 +59,7 @@ export function createRunSummaryOutputSchema(
     : z.array(z.string()).max(0);
 
   return RunSummarySchema.extend({
-    overviewSupportingInsightIds: z.array(insightId).min(1),
+    overviewSupportingInsightIds: z.array(z.string().uuid()).min(1),
     sections: z.object(Object.fromEntries(REPORT_SECTION_KEYS.map((key) => [key, z.array(reportItem)])) as {
       [K in typeof REPORT_SECTION_KEYS[number]]: z.ZodArray<typeof reportItem>
     }),
@@ -71,8 +70,8 @@ export function createRunSummaryOutputSchema(
 export type RunSummary = z.infer<typeof RunSummarySchema>;
 export type SummaryInsightContext = {
   id: string; sourceId: string; sourceName: string; episodeId: string; episodeTitle: string;
-  sourceUrl: string; publishedAt: string; claim: string; reasoning: string; primaryCategory: string;
-  recommendation: string; timeHorizon: string; entities: Array<{ type: "PLAYER" | "TEAM"; name: string; role: string }>;
+  sourceUrl: string; publishedAt: string; timestampSeconds: number | null; claim: string; reasoning: string; primaryCategory: string;
+  recommendation: string; timeHorizon: string; entities: Array<{ id?: string; type: "PLAYER" | "TEAM"; name: string; role: string }>;
 };
 export type SummarySplitContext = {
   id: string; question: string; unresolvedQuestion: string | null; implication: string | null;

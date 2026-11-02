@@ -1,0 +1,27 @@
+{
+  "sizes": [
+    1440,
+    1024,
+    390
+  ],
+  "checks": [
+    "prefill without submission",
+    "three suggestions",
+    "all seven scope options",
+    "Shift+Enter newline",
+    "Enter submit",
+    "disagreement",
+    "canonical internal citation target",
+    "real episode evidence anchor",
+    "follow-up context",
+    "custom scope payload",
+    "My Team payload",
+    "insufficient evidence",
+    "session history",
+    "error keeps question",
+    "no overflow",
+    "final build restores composer keyboard focus after answer"
+  ],
+  "interceptedResearchRequests": 4,
+  "runtimeErrors": []
+}

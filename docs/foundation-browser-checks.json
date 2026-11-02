@@ -1,0 +1,260 @@
+{
+  "results": [
+    {
+      "viewport": 1440,
+      "path": "/",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "Your FPL intelligence",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1440,
+      "path": "/intelligence",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "Intelligence",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1440,
+      "path": "/ask",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "Ask AI",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1440,
+      "path": "/players",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "Explore players and teams",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1440,
+      "path": "/squad",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "My FPL team",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1440,
+      "path": "/sources",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "Sources",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1440,
+      "path": "/settings",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "AI instructions",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1440,
+      "path": "/fixtures",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "Fixture difficulty",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1440,
+      "path": "/analyses",
+      "width": 1440,
+      "scroll": 1440,
+      "heading": "My Analyses",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "Your FPL intelligence",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/intelligence",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "Intelligence",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/ask",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "Ask AI",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/players",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "Explore players and teams",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/squad",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "My FPL team",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/sources",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "Sources",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/settings",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "AI instructions",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/fixtures",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "Fixture difficulty",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 1024,
+      "path": "/analyses",
+      "width": 1024,
+      "scroll": 1024,
+      "heading": "My Analyses",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Your FPL intelligence",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/intelligence",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Intelligence",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/ask",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Ask AI",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/players",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Explore players and teams",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/squad",
+      "width": 390,
+      "scroll": 390,
+      "heading": "My FPL team",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/sources",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Sources",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/settings",
+      "width": 390,
+      "scroll": 390,
+      "heading": "AI instructions",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/fixtures",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Fixture difficulty",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    },
+    {
+      "viewport": 390,
+      "path": "/analyses",
+      "width": 390,
+      "scroll": 390,
+      "heading": "My Analyses",
+      "font": "geist, \"geist Fallback\", Inter, Arial, sans-serif",
+      "canvas": "rgb(248, 249, 247)"
+    }
+  ],
+  "checks": [
+    "drawer focus trap",
+    "Escape",
+    "focus restoration",
+    "drawer route navigation",
+    "collapse and expand",
+    "preference survives reload",
+    "keyboard tabs",
+    "URL input validation",
+    "reduced motion",
+    "no runtime errors"
+  ],
+  "errors": []
+}

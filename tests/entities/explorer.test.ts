@@ -51,5 +51,5 @@ test("entity retrieval is database-scoped by relation and episode publication da
 });
 test("player/team pages are read-only, preserve episode links, timestamps, splits, and honest empty state", async () => {
   const source = await readFile("app/entities/[entityId]/page.tsx", "utf8");
-  assert.doesNotMatch(source, /OpenAI|responses\.parse|extract\(/); assert.match(source, /Creator splits/); assert.match(source, /\/episodes\/\$\{insight\.episodeId\}/); assert.match(source, /buildYouTubeTimestampUrl/); assert.match(source, /No stored insights about/); assert.doesNotMatch(source, /demo|fake/i);
+  assert.doesNotMatch(source, /OpenAI|responses\.parse|extract\(/); assert.match(source, /Creator splits/); assert.match(source, /\/episodes\/\$\{insight\.episodeId\}/); assert.match(source, /buildInsightSourceUrl/); assert.match(source, /5 seconds before evidence/); assert.match(source, /No stored insights about/); assert.doesNotMatch(source, /demo|fake/i);
 });

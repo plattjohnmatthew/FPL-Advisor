@@ -1,3 +1,4 @@
+import { requireCapability } from "@/lib/app-config";
 import "server-only";
 
 export type ResolvedYouTubeChannel = { externalChannelId: string; name: string; channelUrl: string };
@@ -14,6 +15,7 @@ export class YouTubeChannelResolver {
   constructor(private readonly fetcher: typeof fetch = fetch) {}
 
   async resolve(input: string): Promise<ResolvedYouTubeChannel> {
+    requireCapability("canProcessSources");
     let url: URL;
     try { url = new URL(input.trim()); } catch { throw new YouTubeChannelResolutionError("Enter a valid YouTube channel URL."); }
     if (url.protocol !== "https:" || !["youtube.com", "www.youtube.com", "m.youtube.com"].includes(url.hostname.toLowerCase())) {

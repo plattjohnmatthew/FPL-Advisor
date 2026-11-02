@@ -2,7 +2,7 @@ import "server-only";
 
 import { InvalidEnvironmentConfigurationError } from "@/lib/env";
 
-export const OPENAI_MODEL_TASKS = ["TRANSCRIPT_EXTRACTION", "QUERY_INTERPRETATION", "SPLIT_DETECTION", "SYNTHESIS", "CHAT_ANSWER"] as const;
+export const OPENAI_MODEL_TASKS = ["TRANSCRIPT_EXTRACTION", "QUERY_INTERPRETATION", "SPLIT_DETECTION", "SYNTHESIS_REDUCTION", "SYNTHESIS", "CHAT_ANSWER"] as const;
 export type OpenAIModelTask = typeof OPENAI_MODEL_TASKS[number];
 export type OpenAIUsageTask = OpenAIModelTask | "STRUCTURED_OUTPUT_REPAIR";
 
@@ -10,6 +10,7 @@ const POLICY: Record<OpenAIModelTask, { variable: string; recommendedDefault: st
   TRANSCRIPT_EXTRACTION: { variable: "OPENAI_EXTRACTION_MODEL", recommendedDefault: "gpt-5.6-luna" },
   QUERY_INTERPRETATION: { variable: "OPENAI_QUERY_MODEL", recommendedDefault: "gpt-5.6-luna" },
   SPLIT_DETECTION: { variable: "OPENAI_SPLIT_MODEL", recommendedDefault: "gpt-5.6-luna" },
+  SYNTHESIS_REDUCTION: { variable: "OPENAI_SYNTHESIS_REDUCTION_MODEL", recommendedDefault: "gpt-5.6-luna" },
   SYNTHESIS: { variable: "OPENAI_SYNTHESIS_MODEL", recommendedDefault: "gpt-5.4-mini" },
   CHAT_ANSWER: { variable: "OPENAI_CHAT_MODEL", recommendedDefault: "gpt-5.4-mini" },
 };

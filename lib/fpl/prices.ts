@@ -1,0 +1,5 @@
+import type { FplPlayer, FplPosition } from "./types";
+export type PriceObservation = { price: number; observedAt: string };
+export function derivePriceMovement(historyNewestFirst: PriceObservation[]) { const current = historyNewestFirst[0] ?? null; const previous = historyNewestFirst[1] ?? null; return { currentPrice: current?.price ?? null, previousPrice: previous?.price ?? null, difference: current && previous ? Number((current.price - previous.price).toFixed(1)) : null, observedAt: current?.observedAt ?? null }; }
+export type PlayerPriceFilter = { teamId?: number; position?: FplPosition; minPrice?: number; maxPrice?: number };
+export function filterPlayersByMetadata(players: FplPlayer[], filters: PlayerPriceFilter) { return players.filter((player) => (filters.teamId == null || player.fplTeamId === filters.teamId) && (filters.position == null || player.position === filters.position) && (filters.minPrice == null || player.currentPrice >= filters.minPrice) && (filters.maxPrice == null || player.currentPrice <= filters.maxPrice)); }

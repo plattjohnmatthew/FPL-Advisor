@@ -6,6 +6,8 @@ export class FakeTranscriptProvider implements TranscriptProvider {
 
   constructor(private readonly failFirstFor = new Set<string>()) {}
 
+  getAttemptCount(externalEpisodeId: string) { return this.attempts.get(externalEpisodeId) ?? 0; }
+
   async acquireTranscript(episode: StoredEpisode): Promise<NormalizedTranscriptResult> {
     const attempt = (this.attempts.get(episode.externalEpisodeId) ?? 0) + 1;
     this.attempts.set(episode.externalEpisodeId, attempt);
@@ -23,4 +25,3 @@ export class FakeTranscriptProvider implements TranscriptProvider {
     };
   }
 }
-

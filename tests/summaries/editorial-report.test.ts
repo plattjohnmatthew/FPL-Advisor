@@ -37,5 +37,5 @@ test("normal database reset has no demo seed and report UI exposes neither atomi
   assert.match(config, /\[db\.seed\][\s\S]*?enabled = false/);
   assert.doesNotMatch(dashboard, /Insights from episodes published/);
   assert.doesNotMatch(dashboard, /Insight \{insight\.id\}/);
-  assert.match(dashboard, /No processed FPL insights are available for this period/);
+  assert.match(dashboard, /No synthesis has been generated for this period/);
 });

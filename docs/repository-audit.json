@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "scope": "All locally fetched refs, commit/tag messages and Git blobs; tracked and non-ignored working files. Ignored private files are comparison inputs only.",
+  "commits": 4,
+  "historyBlobs": 294,
+  "workingFiles": 366,
+  "knownLocalSecretsCompared": 4,
+  "findings": [],
+  "privatePaths": [],
+  "binaryFiles": [],
+  "limits": "Pattern and known-value checks are not a proof of absence. GitHub Actions logs, issues, releases, hidden PR refs and server-side unreachable objects require separate account review. Application prompt source code becomes public intentionally; private database custom instructions are not exported."
+}

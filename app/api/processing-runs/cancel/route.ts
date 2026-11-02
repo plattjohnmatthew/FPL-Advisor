@@ -1,7 +1,10 @@
+import { disabledResponse } from "@/lib/app-config";
 import { NextResponse } from "next/server";
 import { SupabaseProcessingRepository } from "@/lib/processing/supabase-repository";
 
 export async function POST(request: Request) {
+  const denied = disabledResponse("canProcessSources"); if (denied) return denied;
+
   try {
     const body = await request.json() as { runId?: unknown };
     if (typeof body.runId !== "string" || !/^[0-9a-f-]{36}$/i.test(body.runId)) {

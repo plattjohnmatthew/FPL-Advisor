@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { buildYouTubeTimestampUrl, dateScopeQuery, formatTimestamp } from "../../lib/episodes/presentation";
+import { buildInsightSourceUrl, buildYouTubeTimestampUrl, dateScopeQuery, formatTimestamp, getInsightPlaybackSeconds } from "../../lib/episodes/presentation";
 import { InsightExtractionSchema, validateInsightSegmentReferences } from "../../lib/insights/schema";
 
 const baseInsight = {
@@ -18,6 +18,14 @@ test("timestamps render as MM:SS and HH:MM:SS", () => {
 test("YouTube timestamp URLs preserve video identity and open the correct second", () => {
   assert.equal(buildYouTubeTimestampUrl("https://www.youtube.com/watch?v=abcdefghijk&list=test", 732), "https://www.youtube.com/watch?v=abcdefghijk&list=test&t=732s");
   assert.equal(buildYouTubeTimestampUrl("https://example.com/video", 10), null);
+});
+
+test("insight source links start five seconds before the cited moment and clamp at zero", () => {
+  assert.equal(getInsightPlaybackSeconds(732), 727);
+  assert.equal(getInsightPlaybackSeconds(3), 0);
+  assert.equal(buildInsightSourceUrl("https://www.youtube.com/watch?v=abcdefghijk", 732), "https://www.youtube.com/watch?v=abcdefghijk&t=727s");
+  assert.equal(buildInsightSourceUrl("https://example.com/podcast", 732), "https://example.com/podcast");
+  assert.equal(buildInsightSourceUrl("https://www.youtube.com/watch?v=abcdefghijk", null), "https://www.youtube.com/watch?v=abcdefghijk");
 });
 
 test("valid stored segment IDs determine canonical timestamps", () => {

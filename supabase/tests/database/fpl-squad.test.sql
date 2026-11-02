@@ -1,0 +1,21 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(11);
+select has_table('public','fpl_squad_snapshots','squad snapshots exist');
+select has_table('public','fpl_squad_picks','squad picks exist');
+select has_table('public','fpl_squad_refresh_runs','refresh audit exists');
+insert into public.fpl_teams(fpl_team_id,name,short_name,updated_at) values (31,'Squad Test FC','STF',now());
+insert into public.fpl_players(fpl_player_id,web_name,first_name,second_name,canonical_name,fpl_team_id,position,current_price,status,can_select,can_transact,removed,updated_at)
+select 300+n,'Player'||n,'Test','Player '||n,'Test Player '||n,31,case when n <= 2 then 'GK'::public.fpl_position when n <= 7 then 'DEF'::public.fpl_position when n <= 12 then 'MID'::public.fpl_position else 'FWD'::public.fpl_position end,5.0,'a',true,true,false,now() from generate_series(1,15) n;
+insert into public.fpl_squad_refresh_runs(id,entry_id,status) values ('96000000-0000-4000-8000-000000000001',3555737,'RUNNING');
+select lives_ok($$select public.persist_fpl_squad_snapshot('96000000-0000-4000-8000-000000000001',3555737,'Test Team','Test Manager',1,'2026-08-22',50,50,1000,null,repeat('a',64),(select jsonb_agg(jsonb_build_object('fplPlayerId',300+n,'squadPosition',n,'multiplier',case when n=1 then 2 when n<=11 then 1 else 0 end,'isCaptain',n=1,'isViceCaptain',n=2,'benchOrder',case when n>11 then n-11 else null end) order by n) from generate_series(1,15)n))$$,'valid public squad persists transactionally');
+select is((select count(*)::integer from public.fpl_squad_snapshots),1,'one snapshot persisted');
+select is((select count(*)::integer from public.fpl_squad_picks),15,'all fifteen picks persisted');
+select is((select count(*)::integer from public.fpl_squad_picks where is_captain),1,'captain persists');
+select is((select count(*)::integer from public.fpl_squad_picks where is_vice_captain),1,'vice captain persists');
+select is((select array_agg(bench_order order by squad_position) from public.fpl_squad_picks where bench_order is not null),array[1,2,3,4],'bench order persists');
+insert into public.fpl_squad_refresh_runs(id,entry_id,status) values ('96000000-0000-4000-8000-000000000002',3555737,'RUNNING');
+select lives_ok($$select public.persist_fpl_squad_snapshot('96000000-0000-4000-8000-000000000002',3555737,'Test Team','Test Manager',1,'2026-08-23',50,50,1000,null,repeat('a',64),(select jsonb_agg(jsonb_build_object('fplPlayerId',300+n,'squadPosition',n,'multiplier',case when n=1 then 2 when n<=11 then 1 else 0 end,'isCaptain',n=1,'isViceCaptain',n=2,'benchOrder',case when n>11 then n-11 else null end) order by n) from generate_series(1,15)n))$$,'repeated identical refresh is accepted');
+select is((select count(*)::integer from public.fpl_squad_snapshots),1,'repeated identical refresh creates no duplicate snapshot');
+select * from finish();
+rollback;

@@ -1,0 +1,2 @@
+import { PageHeader, Skeleton } from "@/components/ui/primitives";
+export default function OverviewLoading() { return <main className="overview-shell" aria-busy="true"><PageHeader title="Your FPL briefing" description="Reading saved creator research…" /><div className="intelligence-loading"><Skeleton label="Loading briefing" /><Skeleton label="Loading latest creator intelligence" /></div></main>; }

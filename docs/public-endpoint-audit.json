@@ -1,0 +1,314 @@
+{
+  "endpoints": [
+    {
+      "path": "/analyses",
+      "method": "GET",
+      "classification": "PRIVATE",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/analyses",
+      "method": "HEAD",
+      "classification": "PRIVATE",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/entities/search",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/entities/search",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/episodes/[episodeId]/processing",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/fpl-squad",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/fpl-sync",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/health",
+      "method": "GET",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/health",
+      "method": "HEAD",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/processing-runs/cancel",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/processing-runs",
+      "method": "GET",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/processing-runs",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/processing-runs",
+      "method": "HEAD",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/processing-runs/url-batch",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/prompt-settings",
+      "method": "PUT",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/prompt-settings",
+      "method": "DELETE",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/research-health",
+      "method": "GET",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/research-health",
+      "method": "HEAD",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/research-query",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/sources",
+      "method": "PATCH",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/sources",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/syntheses",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/syntheses",
+      "method": "POST",
+      "classification": "DISABLED IN PUBLIC",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/api/syntheses",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/ask",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/ask",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/entities",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/entities",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/entities/[entityId]",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/entities/[entityId]",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/episodes/[episodeId]",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/episodes/[episodeId]",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/fixtures",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/fixtures",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/intelligence/briefings",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/intelligence/briefings",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/intelligence/briefings/[id]",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/intelligence/briefings/[id]",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/intelligence",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/intelligence",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/players",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/players",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/settings",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/settings",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/sources",
+      "method": "GET",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/sources",
+      "method": "HEAD",
+      "classification": "PUBLIC READ",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/squad",
+      "method": "GET",
+      "classification": "PUBLIC READ ONLY IF ENABLED",
+      "privateMode": "existing behavior"
+    },
+    {
+      "path": "/squad",
+      "method": "HEAD",
+      "classification": "PUBLIC READ ONLY IF ENABLED",
+      "privateMode": "existing behavior"
+    }
+  ],
+  "serverActions": [],
+  "unknownEndpoints": "DISABLED IN PUBLIC by default",
+  "imageOptimizer": "DISABLED IN PUBLIC",
+  "privateTools": [
+    "publish:public",
+    "publish:public-data",
+    "rollback:public-data",
+    "local transcript import"
+  ],
+  "staticAssets": "Next immutable assets and local fonts; no provider execution"
+}

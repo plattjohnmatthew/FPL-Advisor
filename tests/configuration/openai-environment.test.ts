@@ -40,10 +40,10 @@ test("configured task model is returned unchanged", () => {
 });
 
 test("missing model overrides use only the explicit cost-controlled policy defaults", () => {
-  withEnvironment({ OPENAI_EXTRACTION_MODEL: undefined, OPENAI_QUERY_MODEL: undefined, OPENAI_SPLIT_MODEL: undefined, OPENAI_SYNTHESIS_MODEL: undefined, OPENAI_CHAT_MODEL: undefined }, () => {
+  withEnvironment({ OPENAI_EXTRACTION_MODEL: undefined, OPENAI_QUERY_MODEL: undefined, OPENAI_SPLIT_MODEL: undefined, OPENAI_SYNTHESIS_REDUCTION_MODEL: undefined, OPENAI_SYNTHESIS_MODEL: undefined, OPENAI_CHAT_MODEL: undefined }, () => {
     assert.deepEqual(getModelPolicySnapshot(), {
       TRANSCRIPT_EXTRACTION: "gpt-5.6-luna", QUERY_INTERPRETATION: "gpt-5.6-luna", SPLIT_DETECTION: "gpt-5.6-luna",
-      SYNTHESIS: "gpt-5.4-mini", CHAT_ANSWER: "gpt-5.4-mini",
+      SYNTHESIS_REDUCTION: "gpt-5.6-luna", SYNTHESIS: "gpt-5.4-mini", CHAT_ANSWER: "gpt-5.4-mini",
     });
   });
 });

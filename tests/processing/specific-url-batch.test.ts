@@ -68,3 +68,18 @@ test("invalid and duplicate inputs do not block valid entries or create extra ep
   const result = await fixture.value.process("bad\nhttps://youtu.be/abcdefghijk\nhttps://youtube.com/watch?v=abcdefghijk");
   assert.equal(fixture.orchestrator.batches[0].entries.length, 1); assert.equal(result.invalidCount, 1); assert.equal(result.duplicateCount, 1);
 });
+
+
+test("background start persists one run before responding and defers video processing", async () => {
+  const fixture = service();
+  let work: (() => Promise<unknown>) | undefined;
+  const result = await fixture.value.start("https://youtu.be/abcdefghij1", (callback) => { work = callback; });
+  assert.equal(result.status, "RUNNING");
+  assert.equal(fixture.repository.runs, 1);
+  assert.equal(fixture.resolver.calls.length, 0);
+  assert.equal(fixture.orchestrator.batches.length, 0);
+  assert.ok(work);
+  await work();
+  assert.equal(fixture.repository.runs, 1, "background continuation must reuse the reserved run");
+  assert.equal(fixture.orchestrator.batches.length, 1);
+});

@@ -1,4 +1,5 @@
 import "server-only";
+import { executeBackgroundRun } from "./background";
 
 import { parseSpecificVideoUrls } from "./youtube-url-batch";
 import { YouTubeVideoResolver } from "./youtube-video-resolver";
@@ -16,10 +17,18 @@ export class SpecificUrlBatchService {
     private readonly now: () => string = () => new Date().toISOString(),
   ) {}
 
-  async process(input: string) {
+  async start(input: string, schedule: (work: () => Promise<unknown>) => void) {
     const items = parseSpecificVideoUrls(input);
     if (items.length === 0) throw new Error("Paste at least one YouTube video URL.");
     const runId = await this.repository.createSpecificUrlBatchRun(items);
+    schedule(() => executeBackgroundRun(runId, () => this.process(input, runId)));
+    return { runId, status: "RUNNING" as const };
+  }
+
+  async process(input: string, existingRunId?: string) {
+    const items = parseSpecificVideoUrls(input);
+    if (items.length === 0) throw new Error("Paste at least one YouTube video URL.");
+    const runId = existingRunId ?? await this.repository.createSpecificUrlBatchRun(items);
     const entries: SpecificUrlBatchEntry[] = [];
     const sources = new Set<string>();
     const errors: string[] = [];

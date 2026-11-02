@@ -9,6 +9,7 @@
 .env
 .env.local
 .env.*.local
+.env.*
 !.env.example
 test-transcripts/
 
@@ -22,3 +23,24 @@ next-env.d.ts
 
 # local real transcript fixtures
 /test-transcripts/
+
+# Isolated local build verification
+/.next-*-check/
+
+# Generated research data is released independently of frontend Git commits.
+/data/public-snapshots/
+
+# Temporary local security audit surfaces/logs
+/.security-*
+
+# Local deployment links and QA captures may contain personal research/squad data.
+/.vercel/
+/docs/*.png
+/docs/*.jpg
+/docs/*.jpeg
+
+# Local private key files; never part of the application source release.
+*.pem
+*.key
+*.p12
+*.pfx

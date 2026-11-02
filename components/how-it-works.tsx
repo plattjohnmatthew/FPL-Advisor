@@ -1,0 +1,11 @@
+import { PageHeader, Button } from "./ui/primitives";
+import { ShowcaseActionGate } from "./showcase-action-gate";
+import { getShowcaseLinks } from "@/lib/showcase";
+export function HowItWorks() {
+ const links=getShowcaseLinks();
+ return <main className="detail-shell how-it-works"><PageHeader title="How FPL Research works" description="From creator conversations to a durable, evidence-led research library." />
+ <section className="ui-card"><h2>Content → evidence → decisions</h2><p>The full local application discovers creator episodes, acquires transcripts, extracts structured claims, compares disagreements and generates briefings. Every insight retains its creator, episode and supporting evidence.</p><p>The public edition reads an explicitly published snapshot. Browsing never starts processing or live AI research.</p></section>
+ <section className="ui-card"><h2>Configurable locally</h2><dl className="showcase-config"><div><dt>AI models</dt><dd>Choose models for extraction, interpretation and synthesis.</dd></div><div><dt>Transcript providers</dt><dd>Configure native captions and your preferred fallback.</dd></div><div><dt>Research instructions</dt><dd>Adjust extraction and synthesis emphasis while preserving grounding rules.</dd></div><div><dt>FPL integration</dt><dd>Load official player data, fixtures and your own post-deadline squad.</dd></div></dl><div className="showcase-action-row"><ShowcaseActionGate action="Configure AI" description="Model preferences and research instructions can be configured in your own local installation."><Button variant="secondary">Configure AI</Button></ShowcaseActionGate><ShowcaseActionGate action="Refresh FPL data" description="Official FPL data refresh and persistence are available in the local application."><Button variant="secondary">Refresh FPL data</Button></ShowcaseActionGate></div></section>
+ <section className="ui-card"><h2>Run the full product</h2><p>Use your own Supabase project, OpenAI key and transcript configuration. The repository includes local setup and publishing instructions.</p><div className="showcase-action-row"><a className="button-link" href={links.github} target="_blank" rel="noreferrer">View source on GitHub ↗</a><a href={links.setup} target="_blank" rel="noreferrer">Run locally</a></div></section>
+ </main>;
+}

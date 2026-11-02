@@ -7,6 +7,7 @@ export type EpisodeProcessingStatus =
   | "EXTRACTING"
   | "COMPLETED"
   | "FAILED"
+  | "PAUSED"
   | "CANCELLED";
 
 export type TranscriptProcessingStatus = "PENDING" | "FETCHING" | "READY" | "FAILED";

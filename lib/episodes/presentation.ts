@@ -19,6 +19,19 @@ export function buildYouTubeTimestampUrl(sourceUrl: string, timestampSeconds: nu
   }
 }
 
+export const INSIGHT_LINK_LEAD_SECONDS = 5;
+
+export function getInsightPlaybackSeconds(timestampSeconds: number | null, leadSeconds = INSIGHT_LINK_LEAD_SECONDS) {
+  if (timestampSeconds == null || !Number.isFinite(timestampSeconds)) return null;
+  return Math.max(0, Math.floor(timestampSeconds) - Math.max(0, Math.floor(leadSeconds)));
+}
+
+export function buildInsightSourceUrl(sourceUrl: string, timestampSeconds: number | null, leadSeconds = INSIGHT_LINK_LEAD_SECONDS) {
+  const playbackSeconds = getInsightPlaybackSeconds(timestampSeconds, leadSeconds);
+  if (playbackSeconds == null) return sourceUrl;
+  return buildYouTubeTimestampUrl(sourceUrl, playbackSeconds) ?? sourceUrl;
+}
+
 export function dateScopeQuery(from?: string, to?: string) {
   const params = new URLSearchParams();
   if (/^\d{4}-\d{2}-\d{2}$/.test(from ?? "")) params.set("from", from!);

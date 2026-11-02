@@ -1,0 +1,32 @@
+{
+  "target": "john-platt.com",
+  "personalWebsite": {
+    "url": "https://john-platt.com",
+    "httpsStatus": 200,
+    "server": "nginx",
+    "hostHeader": "WordPress.com",
+    "wordpressAssets": true,
+    "nextAssets": false,
+    "localSource": "Separate classic PHP WordPress theme checkout"
+  },
+  "fpl": {
+    "project": "team-john1/fpl-advisor",
+    "identification": "Owner-supplied project/deployment link",
+    "deploymentHostname": "fpl-advisor-dcwxlra0f-team-john1.vercel.app",
+    "dashboard": "https://vercel.com/team-john1/fpl-advisor/C6AfsZtCn3imLbei4yoTfksrkq8H",
+    "hosting": "Vercel",
+    "suppliedUrlRequiresVercelSignIn": true,
+    "accountConfigurationInspected": false,
+    "gitRemote": "https://github.com/plattjohnmatthew/FPL-Advisor",
+    "localBranch": "main"
+  },
+  "recommendation": "https://fpl.john-platt.com",
+  "reason": "WordPress.com does not host an independent app at a subdirectory; a subdomain avoids a new reverse proxy and leaves the apex untouched.",
+  "changesApplied": {
+    "dns": false,
+    "vercelProjectSettings": false,
+    "cloudStoreCreation": false,
+    "cloudSnapshotUpload": false,
+    "productionDeployment": false
+  }
+}

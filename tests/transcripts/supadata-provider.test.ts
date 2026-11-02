@@ -19,9 +19,11 @@ const options = (fetcher: typeof fetch) => ({
 
 test("normalizes a successful plain-text Supadata transcript", async () => {
   const provider = new SupadataTranscriptProvider("secret", options(async () => json({ content: "  Useful FPL view.  ", lang: "en" })));
-  assert.deepEqual(await provider.acquireTranscript(episode), {
+  const { audit, ...result } = await provider.acquireTranscript(episode);
+  assert.deepEqual(result, {
     rawText: "Useful FPL view.", language: "en", durationSeconds: null, providerName: "supadata",
   });
+  assert.equal(audit?.httpRequestCount, 1);
 });
 
 test("normalizes timestamped Supadata segments and derives duration", async () => {
@@ -31,13 +33,23 @@ test("normalizes timestamped Supadata segments and derives duration", async () =
       { text: "Great fixtures.", offset: 4000, duration: 1500, lang: "en" },
     ],
   })));
-  assert.deepEqual(await provider.acquireTranscript(episode), {
+  const { audit, ...result } = await provider.acquireTranscript(episode);
+  assert.deepEqual(result, {
     rawText: "Buy Watkins. Great fixtures.", language: "en", durationSeconds: 6, providerName: "supadata",
     segments: [
       { startSeconds: 1, endSeconds: 3, text: "Buy Watkins." },
       { startSeconds: 4, endSeconds: 5.5, text: "Great fixtures." },
     ],
   });
+  assert.equal(audit?.aiFallbackAllowed, false);
+});
+
+test("uses native-only mode by default and enables auto fallback only explicitly", async () => {
+  const modes: string[] = [];
+  const fetcher = async (input: string | URL | Request) => { modes.push(new URL(input.toString()).searchParams.get("mode")!); return json({ content: "Transcript", lang: "en" }); };
+  await new SupadataTranscriptProvider("secret", options(fetcher)).acquireTranscript(episode);
+  await new SupadataTranscriptProvider("secret", { ...options(fetcher), allowAiFallback: true }).acquireTranscript(episode);
+  assert.deepEqual(modes, ["native", "auto"]);
 });
 
 test("maps transcript unavailable and invalid videos to permanent failures", async () => {
@@ -57,6 +69,14 @@ test("retries a rate limit and succeeds without exposing the API key", async () 
   }));
   assert.equal((await provider.acquireTranscript(episode)).rawText, "Recovered");
   assert.equal(calls, 2);
+});
+
+test("plan-limit 429 is quota exhaustion and does not retry before fallback", async () => {
+  let calls = 0;
+  const provider = new SupadataTranscriptProvider("secret", options(async () => { calls += 1; return json({ message: "Plan usage limit was exceeded." }, 429); }));
+  await assert.rejects(provider.acquireTranscript(episode), (error: unknown) =>
+    error instanceof TranscriptAcquisitionError && error.category === "QUOTA_EXHAUSTED" && error.audit?.responseStatus === 429);
+  assert.equal(calls, 1);
 });
 
 test("reports a transient failure after bounded retries are exhausted", async () => {

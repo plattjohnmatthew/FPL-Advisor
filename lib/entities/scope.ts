@@ -1,4 +1,4 @@
-export const ENTITY_RANGE_PRESETS = ["7d", "30d", "season", "all", "custom"] as const;
+export const ENTITY_RANGE_PRESETS = ["7d", "14d", "30d", "season", "all", "custom"] as const;
 export type EntityRangePreset = typeof ENTITY_RANGE_PRESETS[number];
 export type EntityRange = { preset: EntityRangePreset; label: string; dateFrom: string | null; dateTo: string | null; fromDate: string; toDate: string; query: string };
 
@@ -9,8 +9,8 @@ export function resolveEntityRange(input: { range?: string; from?: string; to?: 
   const preset: EntityRangePreset = ENTITY_RANGE_PRESETS.includes(input.range as EntityRangePreset) ? input.range as EntityRangePreset : "30d";
   const today = day(now);
   let fromDate = ""; let toDate = ""; let label = "All history";
-  if (preset === "7d" || preset === "30d") {
-    const days = preset === "7d" ? 7 : 30;
+  if (preset === "7d" || preset === "14d" || preset === "30d") {
+    const days = preset === "7d" ? 7 : preset === "14d" ? 14 : 30;
     fromDate = day(new Date(Date.parse(`${today}T00:00:00.000Z`) - (days - 1) * 86_400_000)); toDate = today; label = `Last ${days} days`;
   } else if (preset === "season") {
     const start = process.env.FPL_SEASON_START_DATE; const end = process.env.FPL_SEASON_END_DATE;

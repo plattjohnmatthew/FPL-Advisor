@@ -1,0 +1,42 @@
+[
+  {
+    "Path": "/",
+    "Status": 200,
+    "Latest": true,
+    "ActualRange": true,
+    "FullBriefing": true,
+    "Unavailable": false,
+    "Stale": false,
+    "Findings": 5
+  },
+  {
+    "Path": "/intelligence/briefings",
+    "Status": 200,
+    "Latest": true,
+    "ActualRange": true,
+    "FullBriefing": false,
+    "Unavailable": false,
+    "Stale": false,
+    "Findings": 0
+  },
+  {
+    "Path": "/intelligence/briefings/776dd4ac-062b-491c-a1bb-396748a18e5a",
+    "Status": 200,
+    "Latest": true,
+    "ActualRange": true,
+    "FullBriefing": false,
+    "Unavailable": false,
+    "Stale": false,
+    "Findings": 0
+  },
+  {
+    "Path": "/intelligence/briefings/7d7f6b17-c98b-463a-86dd-e60fe7e0937f",
+    "Status": 200,
+    "Latest": false,
+    "ActualRange": false,
+    "FullBriefing": false,
+    "Unavailable": false,
+    "Stale": false,
+    "Findings": 0
+  }
+]

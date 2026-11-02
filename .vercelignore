@@ -1,0 +1,6 @@
+.env*
+!.env.example
+test-transcripts/
+supabase/.temp/
+.next-*-check/
+data/public-snapshots/

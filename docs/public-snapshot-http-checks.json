@@ -1,0 +1,149 @@
+{
+  "mode": "public_read_only",
+  "realNextProductionServer": true,
+  "databaseCredential": "absent; real published snapshot",
+  "paidAndWriteSecrets": "removed after Next environment loading",
+  "externalCalls": 0,
+  "results": [
+    {
+      "path": "/api/processing-runs",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/processing-runs",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/api/processing-runs/url-batch",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/processing-runs/cancel",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/episodes/00000000-0000-4000-8000-000000000001/processing",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/sources",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/sources",
+      "method": "PATCH",
+      "status": 403
+    },
+    {
+      "path": "/api/syntheses",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/research-query",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/fpl-sync",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/fpl-squad",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/prompt-settings",
+      "method": "PUT",
+      "status": 403
+    },
+    {
+      "path": "/api/prompt-settings",
+      "method": "DELETE",
+      "status": 403
+    },
+    {
+      "path": "/api/research-health",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/api/not-yet-reviewed",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/api/not-yet-reviewed",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/ask",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/squad",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/sources",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/settings",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/analyses",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "path": "/",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/intelligence",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/intelligence/briefings",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/players",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/fixtures",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/entities/search?q=Saka",
+      "method": "GET",
+      "status": 200
+    }
+  ]
+}

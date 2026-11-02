@@ -38,7 +38,7 @@ test("both OpenAI tasks load independent settings while protected schemas remain
   assert.match(extraction, /zodTextFormat\(InsightExtractionSchema/);
   assert.match(extraction, /role: "system", content: FPL_INSIGHT_EXTRACTION_PROMPT/);
   assert.match(synthesis, /get\("SYNTHESIS_CUSTOM_INSTRUCTIONS"\)/);
-  assert.match(synthesis, /zodTextFormat\(outputSchema/);
+  assert.match(synthesis, /zodTextFormat\(createRunSummaryOutputSchema/);
   assert.match(synthesis, /role: "system", content: RUN_SUMMARY_PROMPT/);
 });
 

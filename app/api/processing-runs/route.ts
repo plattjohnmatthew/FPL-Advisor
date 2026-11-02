@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+import { disabledResponse } from "@/lib/app-config";
+import { after, NextResponse } from "next/server";
 import { getDashboardSnapshot } from "@/lib/dashboard/data";
 import { RunAlreadyInProgressError } from "@/lib/processing/repository";
 import { startProcessingRun } from "@/lib/processing/start-run";
 import { parseProcessingRunRequest } from "@/lib/processing/options";
 
 export async function GET(request: Request) {
+  const denied = disabledResponse("canWriteData"); if (denied) return denied;
+
   try {
     const searchParams = new URL(request.url).searchParams;
     const rawOffset = searchParams.get("timezoneOffsetMinutes");
@@ -24,9 +27,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const denied = disabledResponse("canProcessSources"); if (denied) return denied;
+
   try {
-    const result = await startProcessingRun(parseProcessingRunRequest(await request.json()));
-    return NextResponse.json(result, { status: 201 });
+    const result = await startProcessingRun(parseProcessingRunRequest(await request.json()), (work) => after(async () => { await work(); }));
+    return NextResponse.json(result, { status: 202 });
   } catch (error) {
     if (error instanceof RunAlreadyInProgressError) {
       return NextResponse.json({ error: error.message }, { status: 409 });

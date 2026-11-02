@@ -18,6 +18,11 @@ import { batchValues } from "@/lib/supabase/batch";
 import { validateExtractionForPersistence } from "@/lib/insights/schema";
 import type { ProcessingRunOptions } from "./options";
 import type { NormalizedUrlItem } from "./youtube-url-batch";
+import { loadFplRegistry } from "@/lib/fpl/repository";
+import { resolveExtractionEntities } from "@/lib/fpl/matching";
+import { resolveCanonicalEntitiesForPersistence } from "@/lib/fpl/extraction-entity-resolution";
+import type { TranscriptProviderCallRecord } from "@/lib/transcripts/audited-provider";
+import { isAutomaticEpisodeRetryEligible } from "./failure-classification";
 
 type EpisodeRow = {
   id: string;
@@ -44,6 +49,31 @@ function mapEpisode(row: EpisodeRow): StoredEpisode {
 }
 
 export class SupabaseProcessingRepository implements ProcessingRepository {
+  async recordTranscriptProviderCall(record: TranscriptProviderCallRecord) {
+    const { error } = await createSupabaseServerClient().from("transcript_provider_calls").insert({
+      provider: record.provider, episode_id: record.episodeId, external_episode_id: record.externalEpisodeId, source_id: record.sourceId,
+      processing_run_id: record.processingRunId, trigger: record.trigger, transcript_existed_before_call: record.transcriptExistedBeforeCall,
+      success: record.success, provider_response_status: record.responseStatus, ai_fallback_allowed: record.aiFallbackAllowed,
+      ai_fallback_used: record.aiFallbackUsed, duration_ms: record.durationMs, retry_attempt_count: record.retryAttemptCount,
+      http_request_count: record.httpRequestCount, billable_request_count: record.billableRequestCount,
+      error_kind: record.errorKind, error_message: record.errorMessage, started_at: record.startedAt, completed_at: record.completedAt,
+      provider_role: record.providerRole, fallback_reason: record.fallbackReason, fallback_provider: record.fallbackProvider,
+      error_code: record.errorCode, fallback_eligible: record.fallbackEligible,
+    });
+    if (error) throw new Error(`Unable to audit transcript-provider request: ${error.message}`);
+  }
+  async markTranscriptProviderFallbackUsed(record: { provider: string; episodeId: string; processingRunId: string | null; fallbackProvider: string; fallbackReason: string }) {
+    const supabase = createSupabaseServerClient();
+    let query = supabase.from("transcript_provider_calls").select("id").eq("provider", record.provider).eq("episode_id", record.episodeId).eq("provider_role", "PRIMARY").order("started_at", { ascending: false }).limit(1);
+    query = record.processingRunId ? query.eq("processing_run_id", record.processingRunId) : query.is("processing_run_id", null);
+    const { data, error } = await query.maybeSingle();
+    if (error) throw new Error(`Unable to locate transcript-provider fallback audit: ${error.message}`);
+    if (!data) return;
+    const { error: updateError } = await supabase.from("transcript_provider_calls").update({
+      fallback_subsequently_used: true, fallback_provider: record.fallbackProvider, fallback_reason: record.fallbackReason,
+    }).eq("id", data.id);
+    if (updateError) throw new Error(`Unable to update transcript-provider fallback audit: ${updateError.message}`);
+  }
   async requestCancellation(runId: string) {
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase.from("processing_runs")
@@ -167,7 +197,7 @@ export class SupabaseProcessingRepository implements ProcessingRepository {
     const { data: episodes, error: episodeError } = await supabase
       .from("episodes")
       .select("id, source_id, external_episode_id, title, source_url, published_at, duration_seconds, gameweek")
-      .eq("source_id", sourceId);
+      .eq("source_id", sourceId).is("processing_paused_at", null);
 
     if (episodeError) {
       throw new Error(`Unable to load retry candidates: ${episodeError.message}`);
@@ -178,10 +208,15 @@ export class SupabaseProcessingRepository implements ProcessingRepository {
 
     const rows = episodes as EpisodeRow[];
     const attempts: Array<{ episode_id: string; status: string; retry_count: number }> = [];
+    const failures: Array<{ episode_id: string; stage: string; retryable: boolean; occurred_at: string }> = [];
     for (const batch of batchValues(rows.map((episode) => episode.id))) {
-      const { data, error } = await supabase.from("run_episodes").select("episode_id, status, retry_count").in("episode_id", batch);
+      const [{ data, error }, { data: failureData, error: failureError }] = await Promise.all([
+        supabase.from("run_episodes").select("episode_id, status, retry_count").in("episode_id", batch),
+        supabase.from("processing_failures").select("episode_id, stage, retryable, occurred_at").in("episode_id", batch).order("occurred_at", { ascending: false }),
+      ]);
       if (error) throw new Error(`Unable to load previous episode attempts: ${error.message}`);
-      attempts.push(...data as typeof attempts);
+      if (failureError) throw new Error(`Unable to load previous transcript failures: ${failureError.message}`);
+      attempts.push(...data as typeof attempts); failures.push(...failureData as typeof failures);
     }
 
     return rows.flatMap((episode) => {
@@ -189,6 +224,9 @@ export class SupabaseProcessingRepository implements ProcessingRepository {
       if (history.length === 0 || history.some((attempt) => attempt.status === "COMPLETED")) {
         return [];
       }
+      const latestFailure = failures.filter((failure) => failure.episode_id === episode.id)
+        .sort((left, right) => right.occurred_at.localeCompare(left.occurred_at))[0];
+      if (!isAutomaticEpisodeRetryEligible(latestFailure)) return [];
 
       const retryCount = Math.max(...history.map((attempt) => Number(attempt.retry_count))) + 1;
       return [{ ...mapEpisode(episode), retryCount }];
@@ -266,6 +304,36 @@ export class SupabaseProcessingRepository implements ProcessingRepository {
       .eq("external_episode_id", externalEpisodeId).limit(1).maybeSingle();
     if (error) throw new Error(`Unable to check existing video: ${error.message}`);
     return data ? mapEpisode(data as EpisodeRow) : null;
+  }
+
+  async getEpisode(episodeId: string) {
+    const { data, error } = await createSupabaseServerClient().from("episodes")
+      .select("id, source_id, external_episode_id, title, source_url, published_at, duration_seconds, gameweek")
+      .eq("id", episodeId).maybeSingle();
+    if (error) throw new Error(`Unable to load episode: ${error.message}`);
+    return data ? mapEpisode(data as EpisodeRow) : null;
+  }
+
+  async createManualEpisodeRun(episode: StoredEpisode) {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase.from("processing_runs").insert({ status: "RUNNING", run_type: "MANUAL_EPISODE", episodes_discovered: 0, episodes_selected: 1 }).select("id").single();
+    if (error?.code === "23505") throw new RunAlreadyInProgressError();
+    if (error) throw new Error(`Unable to create manual episode run: ${error.message}`);
+    const runId = data.id as string;
+    const { error: sourceError } = await supabase.from("processing_run_sources").insert({ processing_run_id: runId, source_id: episode.sourceId });
+    if (sourceError) throw new Error(`Unable to snapshot manual episode source: ${sourceError.message}`);
+    return runId;
+  }
+
+  async setEpisodePaused(episodeId: string, paused: boolean) {
+    const { error } = await createSupabaseServerClient().from("episodes").update({ processing_paused_at: paused ? new Date().toISOString() : null }).eq("id", episodeId);
+    if (error) throw new Error(`Unable to ${paused ? "pause" : "resume"} episode: ${error.message}`);
+  }
+
+  async isEpisodePaused(episodeId: string) {
+    const { data, error } = await createSupabaseServerClient().from("episodes").select("processing_paused_at").eq("id", episodeId).single();
+    if (error) throw new Error(`Unable to read episode pause state: ${error.message}`);
+    return data.processing_paused_at != null;
   }
 
   async isEpisodeFullyProcessed(episodeId: string) {
@@ -390,8 +458,12 @@ export class SupabaseProcessingRepository implements ProcessingRepository {
   }
 
   async persistExtraction(episodeId: string, extraction: import("@/lib/insights/extractor").ExtractionResult) {
-    const normalized = validateExtractionForPersistence(episodeId, extraction);
+    const registry = await loadFplRegistry();
     const supabase = createSupabaseServerClient();
+    const normalizedModelOutput = validateExtractionForPersistence(episodeId, extraction);
+    const { data: entityRows, error: entityError } = await supabase.from("entities").select("id,type,canonical_name,aliases,external_fpl_id");
+    if (entityError) throw new Error(`Unable to load canonical entities before extraction persistence: ${entityError.message}`);
+    const normalized = resolveCanonicalEntitiesForPersistence(resolveExtractionEntities(normalizedModelOutput, registry), registry, entityRows.map((row) => ({ id: row.id as string, type: row.type as "PLAYER" | "TEAM", canonicalName: row.canonical_name as string, aliases: (row.aliases as string[]) ?? [], externalFplId: row.external_fpl_id as number | null })));
     const { data, error } = await supabase.rpc("persist_episode_insight_extraction", {
       target_episode_id: episodeId,
       target_extraction_version: extraction.extractionVersion,

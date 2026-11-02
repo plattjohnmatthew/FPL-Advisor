@@ -1,3 +1,4 @@
+import { requireCapability } from "@/lib/app-config";
 import "server-only";
 
 import { XMLParser } from "fast-xml-parser";
@@ -19,6 +20,7 @@ export class YouTubeEpisodeDiscoveryProvider implements EpisodeDiscoveryProvider
   constructor(private readonly fetcher: FetchLike = fetch) {}
 
   async discoverEpisodes(source: ProcessingSource, _checkpoint: SourceCheckpoint | null, options?: ProcessingRunOptions) {
+    requireCapability("canProcessSources");
     if (source.platform !== "YOUTUBE") throw new Error(`Unsupported discovery platform: ${source.platform}`);
     if (!/^UC[A-Za-z0-9_-]{22}$/.test(source.externalChannelId)) {
       throw new Error(`Invalid YouTube channel ID configured for ${source.name}.`);

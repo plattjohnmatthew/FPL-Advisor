@@ -11,7 +11,7 @@ export const ResearchQueryPlanSchema = z.object({
 });
 export type ResearchQueryPlan = z.infer<typeof ResearchQueryPlanSchema>;
 
-export const RESEARCH_SCOPE_PRESETS = ["THIS_WEEK", "LAST_7_DAYS", "LAST_30_DAYS", "THIS_SEASON", "ALL_HISTORY", "CUSTOM"] as const;
+export const RESEARCH_SCOPE_PRESETS = ["THIS_WEEK", "LAST_7_DAYS", "LAST_14_DAYS", "LAST_30_DAYS", "THIS_SEASON", "ALL_HISTORY", "CUSTOM"] as const;
 export const DEFAULT_RESEARCH_SCOPE = "LAST_7_DAYS" as const;
 export type ResearchScopePreset = typeof RESEARCH_SCOPE_PRESETS[number];
 export type ResearchScopeSelection = { preset: ResearchScopePreset; fromDate?: string; toDate?: string; timezoneOffsetMinutes: number };
@@ -30,6 +30,7 @@ export type RetrievedEvidence = {
   sourceName: string; episodeTitle: string; episodeUrl: string; publishedAt: string;
   claim: string; reasoning: string; evidenceText: string | null; category: string;
   recommendation: string; timeHorizon: string; entities: Array<{ name: string; type: string }>;
+  timestampSeconds: number | null;
 };
 
 export type RetrievedSplitDecision = {
@@ -50,5 +51,6 @@ export const ResearchAnswerSchema = z.object({
 });
 export type ResearchAnswer = z.infer<typeof ResearchAnswerSchema>;
 
-export type ResearchSource = { evidenceIds: string[]; episodeId: string; episodeTitle: string; sourceName: string; sourceUrl: string; publishedAt: string };
-export type ResearchResponse = { question: string; scope: ResolvedResearchScope; answer: ResearchAnswer; sources: ResearchSource[] };
+export type ResearchSource = { sourceId?: string; evidenceIds: string[]; episodeId: string; episodeTitle: string; sourceName: string; sourceUrl: string; publishedAt: string; timestampSeconds: number | null };
+export type ResearchResponse = { question: string; scope: ResolvedResearchScope; answer: ResearchAnswer; sources: ResearchSource[]; analysis?: { id: string; createdAt: string; reused: boolean } };
+export type ResearchContextMode = "GLOBAL" | "MY_TEAM";

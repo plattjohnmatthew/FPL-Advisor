@@ -13,6 +13,7 @@ test("each OpenAI adapter is bound to its intended central task policy", () => {
   assert.doesNotMatch(source("lib/research/service.ts"), /getOpenAIModel\("TRANSCRIPT_EXTRACTION"\)/);
   assert.match(source("lib/splits/openai-detector.ts"), /getOpenAIModel\("SPLIT_DETECTION"\)/);
   assert.match(source("lib/summaries/openai-generator.ts"), /getOpenAIModel\("SYNTHESIS"\)/);
+  assert.match(source("lib/summaries/openai-generator.ts"), /getOpenAIModel\("SYNTHESIS_REDUCTION"\)/);
 });
 
 test("every Responses API call is wrapped by normalized usage tracking", () => {

@@ -2,6 +2,7 @@ import type { EpisodeDiscoveryProvider } from "./discovery";
 import type { ProcessingRepository } from "./repository";
 import { hashTranscriptContent } from "@/lib/transcripts/hash";
 import type { TranscriptProvider } from "@/lib/transcripts/provider";
+import type { TranscriptRequestTrigger } from "@/lib/transcripts/provider";
 import type { InsightExtractor } from "@/lib/insights/extractor";
 import { isRetryableFailure } from "./failure-classification";
 import type {
@@ -39,9 +40,9 @@ export class ProcessingRunOrchestrator {
     private readonly now: () => string = () => new Date().toISOString(),
   ) {}
 
-  async run(options?: ProcessingRunOptions): Promise<ProcessingRunResult> {
+  async run(options?: ProcessingRunOptions, existingRunId?: string): Promise<ProcessingRunResult> {
     const effectiveOptions = options ?? LEGACY_UNBOUNDED_RUN_OPTIONS;
-    const runId = await this.repository.createRun(effectiveOptions, effectiveOptions.selectedSourceIds);
+    const runId = existingRunId ?? await this.repository.createRun(effectiveOptions, effectiveOptions.selectedSourceIds);
     const totals = {
       sourcesChecked: 0,
       episodesDiscovered: 0,
@@ -111,17 +112,18 @@ export class ProcessingRunOrchestrator {
     };
     const errors = [...initial.errors];
     await this.repository.updateRunProgress(runId, totals);
+    for (const entry of entries) await this.repository.createRunEpisode(runId, entry.episode.id, entry.retryCount);
     for (let index = 0; index < entries.length; index += 1) {
       const entry = entries[index];
       if (await this.repository.isCancellationRequested(runId)) {
         for (const remaining of entries.slice(index)) {
-          await this.cancelUnstartedEpisode(runId, remaining);
+          await this.cancelUnstartedEpisode(runId, remaining, true);
           await this.repository.updateUrlBatchItem!(runId, remaining.videoId, { status: "CANCELLED", episodeId: remaining.episode.id });
         }
         break;
       }
       await this.repository.updateUrlBatchItem!(runId, entry.videoId, { status: "PROCESSING", episodeId: entry.episode.id });
-      const outcome = await this.processEpisode(runId, entry, errors);
+      const outcome = await this.processEpisode(runId, entry, errors, true, entry.retryCount > 0 ? "URL_BATCH_RETRY" : "URL_BATCH");
       if (outcome === "COMPLETED") totals.episodesProcessed += 1;
       else if (outcome === "FAILED") totals.episodesFailed += 1;
       await this.repository.updateUrlBatchItem!(runId, entry.videoId, {
@@ -131,7 +133,7 @@ export class ProcessingRunOrchestrator {
       await this.repository.updateRunProgress(runId, totals);
       if (outcome === "CANCELLED") {
         for (const remaining of entries.slice(index + 1)) {
-          await this.cancelUnstartedEpisode(runId, remaining);
+          await this.cancelUnstartedEpisode(runId, remaining, true);
           await this.repository.updateUrlBatchItem!(runId, remaining.videoId, { status: "CANCELLED", episodeId: remaining.episode.id });
         }
         break;
@@ -151,6 +153,20 @@ export class ProcessingRunOrchestrator {
     const completedWork = totals.episodesProcessed + initial.alreadyProcessed;
     const status = cancelled ? "CANCELLED" : errors.length === 0 ? "COMPLETED" : completedWork > 0 ? "PARTIAL" : "FAILED";
     const result: ProcessingRunResult = { runId, status, ...totals, errors };
+    await this.repository.finishRun(result);
+    return result;
+  }
+
+  async runManualEpisode(runId: string, entry: QueueEntry, trigger: "MANUAL_RETRY" | "MANUAL_RESUME" = "MANUAL_RETRY"): Promise<ProcessingRunResult> {
+    const totals = { sourcesChecked: 1, episodesDiscovered: 0, episodesProcessed: 0, episodesFailed: 0, episodesSelected: 1, episodesDeferred: 0 };
+    const errors: string[] = [];
+    await this.repository.updateRunProgress(runId, totals);
+    const outcome = await this.processEpisode(runId, entry, errors, false, trigger);
+    if (outcome === "COMPLETED") totals.episodesProcessed = 1;
+    if (outcome === "FAILED") totals.episodesFailed = 1;
+    const status = await this.repository.isCancellationRequested(runId) ? "CANCELLED" : outcome === "COMPLETED" ? "COMPLETED" : outcome === "FAILED" ? "FAILED" : "CANCELLED";
+    const result: ProcessingRunResult = { runId, status, ...totals, errors };
+    await this.repository.updateRunProgress(runId, totals);
     await this.repository.finishRun(result);
     return result;
   }
@@ -198,21 +214,24 @@ export class ProcessingRunOrchestrator {
 
     await this.repository.updateRunProgress(runId, totals);
 
-    const eligible = [...queue.values()].sort((left, right) =>
+    const ordered = [...queue.values()].sort((left, right) =>
       Date.parse(right.episode.publishedAt) - Date.parse(left.episode.publishedAt)
       || right.episode.externalEpisodeId.localeCompare(left.episode.externalEpisodeId));
+    const eligible: QueueEntry[] = [];
+    for (const entry of ordered) if (!await this.isEpisodePaused(entry.episode.id)) eligible.push(entry);
     const limit = source.platform === "YOUTUBE" ? options.constraints.youtube.maxVideosPerCreator : eligible.length;
     const entries = eligible.slice(0, limit);
     totals.episodesSelected += entries.length;
     totals.episodesDeferred += eligible.length - entries.length;
     await this.repository.updateRunProgress(runId, totals);
+    for (const entry of entries) await this.repository.createRunEpisode(runId, entry.episode.id, entry.retryCount);
     for (let index = 0; index < entries.length; index += 1) {
       const entry = entries[index];
       if (await this.repository.isCancellationRequested(runId)) {
-        for (const remaining of entries.slice(index)) await this.cancelUnstartedEpisode(runId, remaining);
+        for (const remaining of entries.slice(index)) await this.cancelUnstartedEpisode(runId, remaining, true);
         break;
       }
-      const outcome = await this.processEpisode(runId, entry, errors);
+      const outcome = await this.processEpisode(runId, entry, errors, true, entry.retryCount > 0 ? "AUTOMATIC_RETRY" : "CREATOR_DISCOVERY");
       outcomes.set(entry.episode.externalEpisodeId, outcome === "COMPLETED");
       if (outcome === "COMPLETED") {
         totals.episodesProcessed += 1;
@@ -222,7 +241,7 @@ export class ProcessingRunOrchestrator {
 
       await this.repository.updateRunProgress(runId, totals);
       if (outcome === "CANCELLED") {
-        for (const remaining of entries.slice(index + 1)) await this.cancelUnstartedEpisode(runId, remaining);
+        for (const remaining of entries.slice(index + 1)) await this.cancelUnstartedEpisode(runId, remaining, true);
         break;
       }
     }
@@ -249,13 +268,17 @@ export class ProcessingRunOrchestrator {
     return sortDiscovered([...unique.values()]);
   }
 
-  private async processEpisode(runId: string, entry: QueueEntry, errors: string[]) {
+  private async processEpisode(runId: string, entry: QueueEntry, errors: string[], attemptExists = false, trigger: TranscriptRequestTrigger = "CREATOR_DISCOVERY") {
     const { episode, retryCount } = entry;
-    await this.repository.createRunEpisode(runId, episode.id, retryCount);
+    if (!attemptExists) await this.repository.createRunEpisode(runId, episode.id, retryCount);
     let currentStatus: EpisodeProcessingStatus = "DISCOVERED";
     let currentStage: ProcessingFailureStage = "TRANSCRIPT_ACQUISITION";
 
     try {
+      if (await this.isEpisodePaused(episode.id)) {
+        await this.pauseEpisode(runId, episode.id, "DISCOVERED");
+        return "PAUSED" as const;
+      }
       if (await this.repository.isCancellationRequested(runId)) {
         await this.cancelEpisode(runId, episode.id, "DISCOVERED");
         return "CANCELLED" as const;
@@ -273,7 +296,7 @@ export class ProcessingRunOrchestrator {
           await this.cancelEpisode(runId, episode.id, "TRANSCRIPT_FETCHING");
           return "CANCELLED" as const;
         }
-        const transcript = await this.transcriptProvider.acquireTranscript(episode);
+        const transcript = await this.transcriptProvider.acquireTranscript(episode, { processingRunId: runId, trigger, transcriptExistedBeforeCall: false });
         storedTranscript = await this.repository.saveTranscript(
           episode.id,
           transcript,
@@ -286,6 +309,10 @@ export class ProcessingRunOrchestrator {
         transcriptStatus: "READY",
       });
       currentStatus = "TRANSCRIPT_READY";
+      if (await this.isEpisodePaused(episode.id)) {
+        await this.pauseEpisode(runId, episode.id, "TRANSCRIPT_READY");
+        return "PAUSED" as const;
+      }
       if (await this.repository.isCancellationRequested(runId)) {
         await this.cancelEpisode(runId, episode.id, "TRANSCRIPT_READY");
         return "CANCELLED" as const;
@@ -297,6 +324,10 @@ export class ProcessingRunOrchestrator {
         extractionStatus: "EXTRACTING",
       });
       currentStatus = "EXTRACTING";
+      if (await this.repository.isCancellationRequested(runId)) {
+        await this.cancelEpisode(runId, episode.id, "EXTRACTING");
+        return "CANCELLED" as const;
+      }
       if (!await this.repository.hasPersistedExtraction(episode.id)) {
         const extraction = await this.insightExtractor.extract(episode, storedTranscript);
         currentStage = "EXTRACTION_PERSISTENCE";
@@ -331,8 +362,8 @@ export class ProcessingRunOrchestrator {
     }
   }
 
-  private async cancelUnstartedEpisode(runId: string, entry: QueueEntry) {
-    await this.repository.createRunEpisode(runId, entry.episode.id, entry.retryCount);
+  private async cancelUnstartedEpisode(runId: string, entry: QueueEntry, attemptExists = false) {
+    if (!attemptExists) await this.repository.createRunEpisode(runId, entry.episode.id, entry.retryCount);
     await this.cancelEpisode(runId, entry.episode.id, "DISCOVERED");
   }
 
@@ -341,6 +372,17 @@ export class ProcessingRunOrchestrator {
       from, to: "CANCELLED", completedAt: this.now(),
       transcriptStatus: from === "TRANSCRIPT_FETCHING" ? "PENDING" : undefined,
     });
+  }
+
+  private async pauseEpisode(runId: string, episodeId: string, from: "DISCOVERED" | "TRANSCRIPT_READY") {
+    await this.repository.transitionRunEpisode(runId, episodeId, {
+      from, to: "PAUSED", completedAt: this.now(),
+      transcriptStatus: from === "TRANSCRIPT_READY" ? "READY" : undefined,
+    });
+  }
+
+  private async isEpisodePaused(episodeId: string) {
+    return (await this.repository.isEpisodePaused?.(episodeId)) ?? false;
   }
 
   private async recordFailure(runId: string, episodeId: string | null, stage: ProcessingFailureStage, error: unknown, message: string) {
