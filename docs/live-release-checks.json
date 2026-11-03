@@ -35,29 +35,34 @@
   },
   "domain": {
     "target": "fpl.john-platt.com",
-    "currentCname": "john-platt.com",
+    "currentCname": "c24ab6a2676e2695.vercel-dns-017.com",
     "nameservers": [
       "ns1.wordpress.com",
       "ns2.wordpress.com",
       "ns3.wordpress.com"
     ],
-    "https": "certificate hostname mismatch; not ready",
-    "nextAction": "Replace only the fpl CNAME with the exact current target supplied by this Vercel project's Domains settings"
+    "https": "PASS: trusted certificate, hostname verification and TLS 1.3",
+    "nextAction": "Complete",
+    "checksPassed": 14,
+    "configuration": "Owner confirmed Vercel Valid Configuration",
+    "apexWebsite": "https://john-platt.com responds HTTP 200 via nginx/WordPress"
   },
   "productionMainChanged": true,
   "repositoryVisibilityChanged": true,
-  "dnsChanged": false,
+  "dnsChanged": true,
   "vercelSettingsChanged": false,
   "production": {
     "state": "PASS",
     "dashboard": "https://vercel.com/team-john1/fpl-advisor/7SrCeBgQzFrKveWQJmNs8iHkqh7m",
-    "url": "https://fpl-advisor-snowy.vercel.app/",
+    "url": "https://fpl.john-platt.com/",
     "testedCommit": "8cde034aeb058a992f8b22c585914fd9d02ca617",
     "checksPassed": 168,
     "browserScriptsChecked": 16,
     "access": "anonymous; no preview cookies/token",
     "secretAudit": "PASS against four real credentials, two saved custom instructions and seven protected prompts",
-    "cacheObservation": "Immutable assets show HIT; dynamic page responses remain MISS/private no-store, so normal bounded function/render delivery still applies"
+    "cacheObservation": "Immutable assets show HIT; dynamic page responses remain MISS/private no-store, so normal bounded function/render delivery still applies",
+    "alternateUrl": "https://fpl-advisor-snowy.vercel.app/"
   },
-  "repositoryVisibility": "public; anonymous API read verified"
+  "repositoryVisibility": "public; anonymous API read verified",
+  "dnsChangedBy": "Owner changed only existing fpl CNAME; apex records and nameservers unchanged"
 }

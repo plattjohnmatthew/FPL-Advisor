@@ -1,0 +1,121 @@
+{
+  "domain": "https://fpl.john-platt.com",
+  "result": "PASS",
+  "checks": 14,
+  "results": [
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/intelligence",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/intelligence/briefings",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/players",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/fixtures",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/ask",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/sources",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/settings",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/entities/search?q=Saka",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/processing-runs",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/syntheses",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/research-query",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/fpl-sync",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/fpl-squad",
+      "method": "POST",
+      "status": 403
+    }
+  ],
+  "certificate": {
+    "subject": [
+      [
+        [
+          "commonName",
+          "fpl.john-platt.com"
+        ]
+      ]
+    ],
+    "issuer": [
+      [
+        [
+          "countryName",
+          "US"
+        ]
+      ],
+      [
+        [
+          "organizationName",
+          "Let's Encrypt"
+        ]
+      ],
+      [
+        [
+          "commonName",
+          "YR2"
+        ]
+      ]
+    ],
+    "notBefore": "Nov  2 23:14:43 2026 GMT",
+    "notAfter": "Jan 31 23:14:42 2027 GMT",
+    "tlsVersion": "TLSv1.3",
+    "certificateValidation": "standard system trust and hostname checks; never disabled"
+  },
+  "dnsTarget": "c24ab6a2676e2695.vercel-dns-017.com",
+  "dnsObservedAt": "WordPress authoritative, Cloudflare and Google resolvers",
+  "mainWebsite": {
+    "status": 200,
+    "server": "nginx",
+    "url": "https://john-platt.com/"
+  },
+  "dnsChangeBy": "owner updated only fpl CNAME",
+  "configurationConfirmedBy": "owner reported Vercel Valid Configuration",
+  "remainingDomainSteps": []
+}

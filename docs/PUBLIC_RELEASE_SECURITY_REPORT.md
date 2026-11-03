@@ -1,6 +1,10 @@
 # Public-release security and cost-abuse report
 
-**Result: application acceptance PASS against the production build locally. Live production attestation remains pending.** No production configuration, DNS, cloud object, operational research or private settings were changed.
+**Result: application acceptance PASS locally and on the deployed public edition.** The original security audit changed no production settings; the subsequent authorized launch and its remaining verification limits are recorded below.
+
+## Live deployment follow-up — 3 November 2026
+
+Production is now live at **https://fpl.john-platt.com/**. The deployed application passed 168 anonymous read/link/API/asset checks and actual-secret comparisons; trusted custom-domain HTTPS and 14 additional read/denial checks pass. The owner configured the public environment and changed only the fpl DNS record. Source is public under MIT after history/account-surface scans and the selected public-email correction. See [live release checks](live-release-checks.json), [production runtime checks](production-runtime-checks.json), [production secret comparison](production-secret-checks.json) and [custom-domain checks](custom-domain-checks.json). These results supersede the earlier not-yet-deployed status below; authenticated Vercel secret inventory/account spend controls were not independently inspected. Dynamic page responses are observed MISS/private-no-store; immutable assets have HITs, and normal bounded rendering/storage/transfer costs still apply.
 
 ## Evidence
 
