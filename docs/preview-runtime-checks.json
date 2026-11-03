@@ -1,82 +1,9 @@
 {
   "baseUrl": "https://fpl-advisor-git-codex-public-release-team-john1.vercel.app",
-  "commit": "99fdc6a",
+  "commit": "993e4d2",
   "shareToken": "not retained in report",
   "checks": 168,
-  "failures": [
-    {
-      "path": "/_next/image?url=%2Ffavicon.ico&w=3840&q=100",
-      "method": "GET",
-      "status": 400,
-      "expected": 403
-    },
-    {
-      "path": "/intelligence?creator=00000000-0000-4000-8000-000000000010&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=00000000-0000-4000-8000-000000000011&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=0b3278f7-3a3b-4f3e-8002-1981815c3595&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=1a3ccdbb-0841-4736-9651-3cbcfd6d212e&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=3b9612e1-bb88-49be-b3a7-2c55be7691ed&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=41fc7a9c-8d48-4ab0-b4b9-027196655696&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=523e342f-b9ff-4061-8128-d7908b7d6064&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=6bb1c422-45df-4e70-8cd1-d764555847df&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=a5acdc43-e9b5-4216-ba53-905f83a8e349&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=b0946dfa-987b-41a8-a64f-e1faa1b512dd&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    },
-    {
-      "path": "/intelligence?creator=e83a32f7-a3d3-4603-aaef-eaac03bb45a0&range=all",
-      "method": "GET",
-      "status": 400,
-      "expected": 200
-    }
-  ],
+  "failures": [],
   "browserScripts": 16,
   "results": [
     {
@@ -149,7 +76,7 @@
       "path": "/sources",
       "method": "GET",
       "status": 200,
-      "bytes": 31567,
+      "bytes": 31385,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -535,8 +462,11 @@
       "method": "GET",
       "status": 400,
       "bytes": 84,
-      "expected": 403,
-      "pass": false,
+      "expected": [
+        400,
+        403
+      ],
+      "pass": true,
       "vercelCache": null,
       "cacheControl": "public, max-age=0, must-revalidate",
       "vary": null
@@ -653,6 +583,17 @@
       "vary": null
     },
     {
+      "path": "/ask?q=What+are+creators+saying+about+Jaden+Anthony%3F&scope=ALL_HISTORY",
+      "method": "GET",
+      "status": 200,
+      "bytes": 20899,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
       "path": "/ask?q=What%27s+changed+in+the+last+seven+days%3F",
       "method": "GET",
       "status": 200,
@@ -668,17 +609,6 @@
       "method": "GET",
       "status": 200,
       "bytes": 20911,
-      "expected": 200,
-      "pass": true,
-      "vercelCache": "MISS",
-      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
-      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
-    },
-    {
-      "path": "/ask?q=What+are+creators+saying+about+Jaden+Anthony%3F&scope=ALL_HISTORY",
-      "method": "GET",
-      "status": 200,
-      "bytes": 20899,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -708,17 +638,6 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/ask?q=Which+transfers+are+gaining+attention%3F",
-      "method": "GET",
-      "status": 200,
-      "bytes": 20814,
-      "expected": 200,
-      "pass": true,
-      "vercelCache": "MISS",
-      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
-      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
-    },
-    {
       "path": "/entities/0349d70f-76b0-468f-90e8-2db539c1ca1f",
       "method": "GET",
       "status": 200,
@@ -730,10 +649,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/entities/17c821c2-eead-4c73-864a-1ccda2c15227?range=7d",
+      "path": "/ask?q=Which+transfers+are+gaining+attention%3F",
       "method": "GET",
       "status": 200,
-      "bytes": 39055,
+      "bytes": 20814,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -752,17 +671,6 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/entities/2645b109-1b75-45c0-a13e-14cfca838343",
-      "method": "GET",
-      "status": 200,
-      "bytes": 29421,
-      "expected": 200,
-      "pass": true,
-      "vercelCache": "MISS",
-      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
-      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
-    },
-    {
       "path": "/entities/275cfb38-7a4a-442c-af3d-f0b890496bf4",
       "method": "GET",
       "status": 200,
@@ -774,10 +682,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/entities/29f45226-1bac-42d6-9f74-c46fa517c78a",
+      "path": "/entities/17c821c2-eead-4c73-864a-1ccda2c15227?range=7d",
       "method": "GET",
       "status": 200,
-      "bytes": 65249,
+      "bytes": 39338,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -785,10 +693,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/entities/2e2241d8-463b-4d61-bd0c-7c1549641128",
+      "path": "/entities/2645b109-1b75-45c0-a13e-14cfca838343",
       "method": "GET",
       "status": 200,
-      "bytes": 93878,
+      "bytes": 30905,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -807,10 +715,32 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
+      "path": "/entities/29f45226-1bac-42d6-9f74-c46fa517c78a",
+      "method": "GET",
+      "status": 200,
+      "bytes": 66162,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
       "path": "/entities/61831708-791e-4b7d-8681-603e7b1944b6",
       "method": "GET",
       "status": 200,
       "bytes": 98568,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/entities/2e2241d8-463b-4d61-bd0c-7c1549641128",
+      "method": "GET",
+      "status": 200,
+      "bytes": 96079,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -851,10 +781,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/entities/7c86d863-3687-4a80-b84f-1933948355ee?range=7d",
+      "path": "/entities/8595322b-412c-417b-8c2f-d439b5cb486f",
       "method": "GET",
       "status": 200,
-      "bytes": 127498,
+      "bytes": 27858,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -873,10 +803,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/entities/8595322b-412c-417b-8c2f-d439b5cb486f",
+      "path": "/entities/7c86d863-3687-4a80-b84f-1933948355ee?range=7d",
       "method": "GET",
       "status": 200,
-      "bytes": 27858,
+      "bytes": 127498,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -888,17 +818,6 @@
       "method": "GET",
       "status": 200,
       "bytes": 76739,
-      "expected": 200,
-      "pass": true,
-      "vercelCache": "MISS",
-      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
-      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
-    },
-    {
-      "path": "/entities/9b9abd25-fe56-453f-9a62-cde392df0bfe",
-      "method": "GET",
-      "status": 200,
-      "bytes": 112584,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -939,10 +858,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/entities/c500a752-2ed9-49b4-adf8-e5a63a6aeada",
+      "path": "/entities/9b9abd25-fe56-453f-9a62-cde392df0bfe",
       "method": "GET",
       "status": 200,
-      "bytes": 29415,
+      "bytes": 112584,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -954,6 +873,17 @@
       "method": "GET",
       "status": 200,
       "bytes": 29377,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/entities/c500a752-2ed9-49b4-adf8-e5a63a6aeada",
+      "method": "GET",
+      "status": 200,
+      "bytes": 29415,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1005,10 +935,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/episodes/13e4103a-b39f-4009-bf68-2e3659df3e48",
+      "path": "/episodes/13e4103a-b39f-4009-bf68-2e3659df3e48?returnTo=%2Fintelligence",
       "method": "GET",
       "status": 200,
-      "bytes": 113661,
+      "bytes": 113954,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1016,10 +946,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/episodes/13e4103a-b39f-4009-bf68-2e3659df3e48?returnTo=%2Fintelligence",
+      "path": "/episodes/13e4103a-b39f-4009-bf68-2e3659df3e48",
       "method": "GET",
       "status": 200,
-      "bytes": 113954,
+      "bytes": 113661,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1225,10 +1155,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/episodes/7758eadd-5a1a-44f0-8591-61c1abad44ba?returnTo=%2Fintelligence",
+      "path": "/episodes/7f060206-b71f-4972-83e9-177bd44bebf5?returnTo=%2Fintelligence",
       "method": "GET",
       "status": 200,
-      "bytes": 151976,
+      "bytes": 119768,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1236,10 +1166,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/episodes/7f060206-b71f-4972-83e9-177bd44bebf5?returnTo=%2Fintelligence",
+      "path": "/episodes/7758eadd-5a1a-44f0-8591-61c1abad44ba?returnTo=%2Fintelligence",
       "method": "GET",
       "status": 200,
-      "bytes": 119768,
+      "bytes": 151976,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1467,10 +1397,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/episodes/f58f4e99-4c58-430f-b56d-dab1f79c9f3d?returnTo=%2Fintelligence",
+      "path": "/episodes/f9351ebd-ba23-4476-852f-2e451551dd9a?returnTo=%2Fintelligence",
       "method": "GET",
       "status": 200,
-      "bytes": 139784,
+      "bytes": 107080,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1489,10 +1419,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/episodes/f9351ebd-ba23-4476-852f-2e451551dd9a?returnTo=%2Fintelligence",
+      "path": "/episodes/f58f4e99-4c58-430f-b56d-dab1f79c9f3d?returnTo=%2Fintelligence",
       "method": "GET",
       "status": 200,
-      "bytes": 107080,
+      "bytes": 139784,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1522,10 +1452,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/episodes/fb5a57e4-3df7-4be3-9e93-c339e57d53ea?returnTo=%2Fintelligence",
+      "path": "/episodes/fe394323-bab6-411b-9315-ca1ea7354a79?returnTo=%2Fintelligence",
       "method": "GET",
       "status": 200,
-      "bytes": 123722,
+      "bytes": 117974,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1533,10 +1463,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/episodes/fe394323-bab6-411b-9315-ca1ea7354a79?returnTo=%2Fintelligence",
+      "path": "/episodes/fb5a57e4-3df7-4be3-9e93-c339e57d53ea?returnTo=%2Fintelligence",
       "method": "GET",
       "status": 200,
-      "bytes": 117974,
+      "bytes": 123722,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1555,10 +1485,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/intelligence/briefings/7d7f6b17-c98b-463a-86dd-e60fe7e0937f",
+      "path": "/intelligence/briefings/bf17fe71-15fa-4d53-966f-934c0c6d5764",
       "method": "GET",
       "status": 200,
-      "bytes": 285675,
+      "bytes": 91179,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1577,17 +1507,6 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/intelligence/briefings/bf17fe71-15fa-4d53-966f-934c0c6d5764",
-      "method": "GET",
-      "status": 200,
-      "bytes": 91179,
-      "expected": 200,
-      "pass": true,
-      "vercelCache": "MISS",
-      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
-      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
-    },
-    {
       "path": "/intelligence/briefings/cfec6519-cedb-4939-89f1-902ad0efaeb3",
       "method": "GET",
       "status": 200,
@@ -1599,10 +1518,10 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/intelligence/briefings/e2774e66-9e0d-4f31-a0e9-f3c9e138144e",
+      "path": "/intelligence/briefings/7d7f6b17-c98b-463a-86dd-e60fe7e0937f",
       "method": "GET",
       "status": 200,
-      "bytes": 96051,
+      "bytes": 285675,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
@@ -1621,6 +1540,17 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
+      "path": "/intelligence/briefings/e2774e66-9e0d-4f31-a0e9-f3c9e138144e",
+      "method": "GET",
+      "status": 200,
+      "bytes": 96051,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
       "path": "/intelligence/briefings/f85dd869-6ee9-4ec4-a858-6b3c064372d2",
       "method": "GET",
       "status": 200,
@@ -1632,158 +1562,125 @@
       "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/intelligence?creator=00000000-0000-4000-8000-000000000010&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=00000000-0000-4000-8000-000000000011&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=0b3278f7-3a3b-4f3e-8002-1981815c3595&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=1a3ccdbb-0841-4736-9651-3cbcfd6d212e&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=3b9612e1-bb88-49be-b3a7-2c55be7691ed&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=41fc7a9c-8d48-4ab0-b4b9-027196655696&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=523e342f-b9ff-4061-8128-d7908b7d6064&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=6bb1c422-45df-4e70-8cd1-d764555847df&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=a5acdc43-e9b5-4216-ba53-905f83a8e349&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=b0946dfa-987b-41a8-a64f-e1faa1b512dd&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/intelligence?creator=e83a32f7-a3d3-4603-aaef-eaac03bb45a0&range=all",
-      "method": "GET",
-      "status": 400,
-      "bytes": 89,
-      "expected": 200,
-      "pass": false,
-      "vercelCache": null,
-      "cacheControl": "no-store",
-      "vary": null
-    },
-    {
-      "path": "/_next/static/immutable/chunks/0-dgzpzkbw_jd.js",
+      "path": "/intelligence?creator=00000000-0000-4000-8000-000000000010",
       "method": "GET",
       "status": 200,
-      "bytes": 48731,
+      "bytes": 65395,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
-      "cacheControl": "public,max-age=31536000,immutable",
-      "vary": null
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
-      "path": "/_next/static/immutable/chunks/0522ljqc9r0ls.js",
+      "path": "/intelligence?creator=00000000-0000-4000-8000-000000000011",
       "method": "GET",
       "status": 200,
-      "bytes": 36420,
-      "expected": 200,
-      "pass": true,
-      "vercelCache": "HIT",
-      "cacheControl": "public,max-age=31536000,immutable",
-      "vary": null
-    },
-    {
-      "path": "/_next/static/immutable/chunks/0c0hxoamwjsbw.js",
-      "method": "GET",
-      "status": 200,
-      "bytes": 112594,
+      "bytes": 69824,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",
-      "cacheControl": "public,max-age=31536000,immutable",
-      "vary": null
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=3b9612e1-bb88-49be-b3a7-2c55be7691ed",
+      "method": "GET",
+      "status": 200,
+      "bytes": 37660,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=0b3278f7-3a3b-4f3e-8002-1981815c3595",
+      "method": "GET",
+      "status": 200,
+      "bytes": 99058,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=1a3ccdbb-0841-4736-9651-3cbcfd6d212e",
+      "method": "GET",
+      "status": 200,
+      "bytes": 54848,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=41fc7a9c-8d48-4ab0-b4b9-027196655696",
+      "method": "GET",
+      "status": 200,
+      "bytes": 36731,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=523e342f-b9ff-4061-8128-d7908b7d6064",
+      "method": "GET",
+      "status": 200,
+      "bytes": 32566,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=6bb1c422-45df-4e70-8cd1-d764555847df",
+      "method": "GET",
+      "status": 200,
+      "bytes": 40616,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=a5acdc43-e9b5-4216-ba53-905f83a8e349",
+      "method": "GET",
+      "status": 200,
+      "bytes": 33222,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=b0946dfa-987b-41a8-a64f-e1faa1b512dd",
+      "method": "GET",
+      "status": 200,
+      "bytes": 29056,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "path": "/intelligence?creator=e83a32f7-a3d3-4603-aaef-eaac03bb45a0",
+      "method": "GET",
+      "status": 200,
+      "bytes": 44392,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "MISS",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
     },
     {
       "path": "/_next/static/immutable/chunks/0fctlc404n4yi.js",
@@ -1803,7 +1700,29 @@
       "bytes": 607,
       "expected": 200,
       "pass": true,
-      "vercelCache": "MISS",
+      "vercelCache": "HIT",
+      "cacheControl": "public,max-age=31536000,immutable",
+      "vary": null
+    },
+    {
+      "path": "/_next/static/immutable/chunks/0c0hxoamwjsbw.js",
+      "method": "GET",
+      "status": 200,
+      "bytes": 112594,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "HIT",
+      "cacheControl": "public,max-age=31536000,immutable",
+      "vary": null
+    },
+    {
+      "path": "/_next/static/immutable/chunks/0522ljqc9r0ls.js",
+      "method": "GET",
+      "status": 200,
+      "bytes": 36420,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "HIT",
       "cacheControl": "public,max-age=31536000,immutable",
       "vary": null
     },
@@ -1819,24 +1738,13 @@
       "vary": null
     },
     {
-      "path": "/_next/static/immutable/chunks/11ir4eg7cad-j.js",
-      "method": "GET",
-      "status": 200,
-      "bytes": 229595,
-      "expected": 200,
-      "pass": true,
-      "vercelCache": "HIT",
-      "cacheControl": "public,max-age=31536000,immutable",
-      "vary": null
-    },
-    {
       "path": "/_next/static/immutable/chunks/1b0gf_l-1kezf.js",
       "method": "GET",
       "status": 200,
       "bytes": 3487,
       "expected": 200,
       "pass": true,
-      "vercelCache": "MISS",
+      "vercelCache": "HIT",
       "cacheControl": "public,max-age=31536000,immutable",
       "vary": null
     },
@@ -1852,10 +1760,10 @@
       "vary": null
     },
     {
-      "path": "/_next/static/immutable/chunks/23ueik071wq-j.js",
+      "path": "/_next/static/immutable/chunks/1abn2spglb5go.js",
       "method": "GET",
       "status": 200,
-      "bytes": 109039,
+      "bytes": 229595,
       "expected": 200,
       "pass": true,
       "vercelCache": "HIT",
@@ -1880,7 +1788,18 @@
       "bytes": 16668,
       "expected": 200,
       "pass": true,
-      "vercelCache": "MISS",
+      "vercelCache": "HIT",
+      "cacheControl": "public,max-age=31536000,immutable",
+      "vary": null
+    },
+    {
+      "path": "/_next/static/immutable/chunks/23ueik071wq-j.js",
+      "method": "GET",
+      "status": 200,
+      "bytes": 109039,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "HIT",
       "cacheControl": "public,max-age=31536000,immutable",
       "vary": null
     },
@@ -1891,7 +1810,7 @@
       "bytes": 3763,
       "expected": 200,
       "pass": true,
-      "vercelCache": "MISS",
+      "vercelCache": "HIT",
       "cacheControl": "public,max-age=31536000,immutable",
       "vary": null
     },
@@ -1902,7 +1821,7 @@
       "bytes": 2684,
       "expected": 200,
       "pass": true,
-      "vercelCache": "MISS",
+      "vercelCache": "HIT",
       "cacheControl": "public,max-age=31536000,immutable",
       "vary": null
     },
@@ -1913,7 +1832,7 @@
       "bytes": 12977,
       "expected": 200,
       "pass": true,
-      "vercelCache": "MISS",
+      "vercelCache": "HIT",
       "cacheControl": "public,max-age=31536000,immutable",
       "vary": null
     },
@@ -1929,10 +1848,21 @@
       "vary": null
     },
     {
+      "path": "/_next/static/immutable/chunks/3a7-h2t99s35p.js",
+      "method": "GET",
+      "status": 200,
+      "bytes": 48721,
+      "expected": 200,
+      "pass": true,
+      "vercelCache": "HIT",
+      "cacheControl": "public,max-age=31536000,immutable",
+      "vary": null
+    },
+    {
       "path": "/",
       "method": "GET",
       "status": 200,
-      "bytes": 64432,
+      "bytes": 63699,
       "expected": 200,
       "pass": true,
       "vercelCache": "MISS",

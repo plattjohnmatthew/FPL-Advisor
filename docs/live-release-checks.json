@@ -12,16 +12,19 @@
     "discussionsEnabled": false
   },
   "preview": {
-    "state": "build succeeded; awaiting shareable link for runtime verification",
-    "githubStatusDescription": "Deployment was blocked",
-    "dashboard": "https://vercel.com/team-john1/fpl-advisor/HGSqAUdQpr3M3jD7Z6SkNUvPCvXC",
+    "state": "PASS",
+    "dashboard": "https://vercel.com/team-john1/fpl-advisor/4tqSap8rAa1oTD29qVAFonPS6MKp",
     "url": "https://fpl-advisor-pw424fv4v-team-john1.vercel.app",
-    "anonymousRequest": "redirects to Vercel sign-in; no application attestation",
+    "anonymousRequest": "Vercel-protected preview tested using owner-supplied share access; access token excluded",
     "authorEmail": "john@john-platt.com",
     "githubRecognizesAuthor": true,
-    "nextAction": "Owner shares this specific preview so live page/API checks can run",
-    "releaseCommit": "99fdc6a",
-    "authorAccount": "plattjohnmatthew"
+    "nextAction": "Promote tested application code to production main",
+    "releaseCommit": "993e4d2",
+    "authorAccount": "plattjohnmatthew",
+    "checksPassed": 168,
+    "browserScriptsChecked": 16,
+    "secretAudit": "PASS against actual private settings and credentials",
+    "interactiveAsk": "Read-only explanatory dialog; no AI submission"
   },
   "localProductionRuntime": {
     "checksPassed": 54,
