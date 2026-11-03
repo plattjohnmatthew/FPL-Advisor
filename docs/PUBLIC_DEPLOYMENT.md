@@ -1,5 +1,11 @@
 # Public deployment
 
+## Current release status
+
+The public edition is live at https://fpl-advisor-snowy.vercel.app/ and the MIT source repository is public. The main production release passed 168 anonymous live checks and actual-secret comparisons. Preview testing caught and corrected Sources creator-link query parameters before promotion. The configured custom domain **fpl.john-platt.com is not ready yet**: its current CNAME points to the WordPress apex. Replace only that subdomain record using the exact value shown by Vercel, then verify DNS/TLS. Do not change apex records or nameservers. [Live evidence](live-release-checks.json).
+
+The checks observed CDN HITs for immutable assets; dynamic pages still report MISS/private no-store. Snapshot caches and request/output bounds remain in force, but normal function rendering and traffic are billable.
+
 ## URL and hosting audit
 
 Use **https://fpl.john-platt.com** for the application and link to it from the personal website. The owner confirmed `john-platt.com` (the plural spelling in the request was a typo).

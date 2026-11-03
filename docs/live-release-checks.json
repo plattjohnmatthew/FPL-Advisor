@@ -2,7 +2,7 @@
   "date": "2026-11-03",
   "repository": "plattjohnmatthew/FPL-Advisor",
   "releaseBranch": "codex/public-release",
-  "releaseCommit": "cb38a6ab40cfe33e75396f4ba8be3581c31c2366",
+  "releaseCommit": "8cde034aeb058a992f8b22c585914fd9d02ca617",
   "githubAccountReview": {
     "actionsRuns": 0,
     "releases": 0,
@@ -14,11 +14,11 @@
   "preview": {
     "state": "PASS",
     "dashboard": "https://vercel.com/team-john1/fpl-advisor/4tqSap8rAa1oTD29qVAFonPS6MKp",
-    "url": "https://fpl-advisor-pw424fv4v-team-john1.vercel.app",
+    "url": "https://fpl-advisor-git-codex-public-release-team-john1.vercel.app/",
     "anonymousRequest": "Vercel-protected preview tested using owner-supplied share access; access token excluded",
     "authorEmail": "john@john-platt.com",
     "githubRecognizesAuthor": true,
-    "nextAction": "Promote tested application code to production main",
+    "nextAction": "Completed; production deployed and anonymously tested",
     "releaseCommit": "993e4d2",
     "authorAccount": "plattjohnmatthew",
     "checksPassed": 168,
@@ -27,7 +27,7 @@
     "interactiveAsk": "Read-only explanatory dialog; no AI submission"
   },
   "localProductionRuntime": {
-    "checksPassed": 54,
+    "checksPassed": 67,
     "snapshotSource": "live public Blob storage",
     "snapshotReads": 24,
     "prohibitedExternalOperations": 0,
@@ -44,8 +44,20 @@
     "https": "certificate hostname mismatch; not ready",
     "nextAction": "Replace only the fpl CNAME with the exact current target supplied by this Vercel project's Domains settings"
   },
-  "productionMainChanged": false,
-  "repositoryVisibilityChanged": false,
+  "productionMainChanged": true,
+  "repositoryVisibilityChanged": true,
   "dnsChanged": false,
-  "vercelSettingsChanged": false
+  "vercelSettingsChanged": false,
+  "production": {
+    "state": "PASS",
+    "dashboard": "https://vercel.com/team-john1/fpl-advisor/7SrCeBgQzFrKveWQJmNs8iHkqh7m",
+    "url": "https://fpl-advisor-snowy.vercel.app/",
+    "testedCommit": "8cde034aeb058a992f8b22c585914fd9d02ca617",
+    "checksPassed": 168,
+    "browserScriptsChecked": 16,
+    "access": "anonymous; no preview cookies/token",
+    "secretAudit": "PASS against four real credentials, two saved custom instructions and seven protected prompts",
+    "cacheObservation": "Immutable assets show HIT; dynamic page responses remain MISS/private no-store, so normal bounded function/render delivery still applies"
+  },
+  "repositoryVisibility": "public; anonymous API read verified"
 }
